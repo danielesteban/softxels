@@ -6,13 +6,9 @@ import {
   sRGBEncoding,
   WebGLRenderer,
 } from 'three';
-import SetupComposer from './postprocessing.js';
 
 class Renderer {
-  constructor({
-    dom,
-    postprocessing,
-  }) {
+  constructor(dom) {
     this.clock = new Clock();
     this.clock.localStartTime = Date.now();
     this.fps = {
@@ -37,17 +33,12 @@ class Renderer {
 
     window.addEventListener('resize', this.onResize.bind(this), false);
     this.onResize();
-
-    if (postprocessing) {
-      this.composer = SetupComposer(this.renderer);
-    }
   }
 
   onAnimationTick() {
     const {
       camera,
       clock,
-      composer,
       dom,
       fps,
       renderer,
@@ -60,13 +51,7 @@ class Renderer {
     };
 
     scene.onAnimationTick(animation);
-    if (composer) {
-      composer.renderPass.camera = camera;
-      composer.renderPass.scene = scene;
-      composer.render();
-    } else {
-      renderer.render(scene, camera);
-    }
+    renderer.render(scene, camera);
 
     fps.count += 1;
     if (animation.time >= fps.lastTick + 1) {
@@ -80,17 +65,12 @@ class Renderer {
   onResize() {
     const {
       camera,
-      composer,
       dom,
       renderer,
     } = this;
 
     const { width, height } = dom.renderer.getBoundingClientRect();
     renderer.setSize(width, height);
-    if (composer) {
-      composer.setSize(width, height);
-      renderer.getDrawingBufferSize(composer.shader.uniforms.resolution.value);
-    }
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   }

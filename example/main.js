@@ -12,12 +12,9 @@ import Renderer from './core/renderer.js';
 Renderer.patchFog();
 
 const renderer = new Renderer({
-  dom: {
-    cursor: document.getElementById('cursor'),
-    fps: document.getElementById('fps'),
-    renderer: document.getElementById('renderer'),
-  },
-  postprocessing: !navigator.userAgent.includes('Mobile'),
+  cursor: document.getElementById('cursor'),
+  fps: document.getElementById('fps'),
+  renderer: document.getElementById('renderer'),
 });
 
 class Main extends Scene {
