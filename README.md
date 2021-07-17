@@ -5,6 +5,10 @@
 [![screenshot](https://github.com/danielesteban/softxels/raw/master/example/screenshot.png)](https://softxels.gatunes.com/)
 
 
+#### Live example
+
+[https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+
 ### Installation
 
 ```bash
