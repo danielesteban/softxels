@@ -1,5 +1,5 @@
 #define FNL_IMPL
-#include "./fastnoise.h"
+#include "../vendor/FastNoiseLite/C/FastNoiseLite.h"
 
 static const unsigned int getColorFromNoise(unsigned char noise) {
   noise = 255 - noise;

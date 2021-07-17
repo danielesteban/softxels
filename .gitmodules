@@ -1,0 +1,6 @@
+[submodule "vendor/wasi-libc"]
+	path = vendor/wasi-libc
+	url = https://github.com/WebAssembly/wasi-libc.git
+[submodule "vendor/FastNoiseLite"]
+	path = vendor/FastNoiseLite
+	url = https://github.com/Auburn/FastNoiseLite
