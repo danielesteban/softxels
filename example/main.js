@@ -5,8 +5,8 @@ import {
   Scene,
 } from 'three';
 import { World } from 'softxels';
-import Player from './player.js';
-import Renderer from './renderer.js';
+import Player from './core/player.js';
+import Renderer from './core/renderer.js';
 
 Renderer.patchFog();
 
