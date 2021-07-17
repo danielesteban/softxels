@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import copy from 'rollup-plugin-copy';
 import { terser } from 'rollup-plugin-terser';
 import wasm from '@rollup/plugin-wasm';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
@@ -18,6 +19,14 @@ export default {
     }),
     webWorkerLoader({
       forceInline: true,
+      skipPlugins: ['copy'],
+    }),
+    copy({
+      targets: [
+        { src: 'LICENSE', dest: 'dist' },
+        { src: 'README.md', dest: 'dist' },
+      ],
+      copyOnce: !process.env.ROLLUP_WATCH,
     }),
     {
       writeBundle() {
@@ -26,7 +35,7 @@ export default {
           author: 'Daniel Esteban Nombela',
           license: 'MIT',
           module: 'softxels.js',
-          version: '0.0.3',
+          version: '0.0.4',
           homepage: 'https://softxels.gatunes.com',
           repository: {
             'type': 'git',
