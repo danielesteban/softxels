@@ -7,7 +7,7 @@
     "start": "npm run build -- -w"
   },
   "dependencies": {
-    "softxels": "0.0.1"
+    "softxels": "^0.0.2"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.2",
