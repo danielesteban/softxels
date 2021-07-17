@@ -1,0 +1,17 @@
+{
+  "name": "softxels",
+  "author": "Daniel Esteban Nombela",
+  "license": "MIT",
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "compile:mesher": "sh src/compile.sh mesher",
+    "compile:worldgen": "sh src/compile.sh worldgen",
+    "start": "npm run build -- -w"
+  },
+  "devDependencies": {
+    "@rollup/plugin-wasm": "^5.1.2",
+    "rollup": "^2.53.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-web-worker-loader": "^1.6.1"
+  }
+}
