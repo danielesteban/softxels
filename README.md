@@ -4,18 +4,13 @@
 
 [![screenshot](https://github.com/danielesteban/softxels/raw/master/example/screenshot.png)](https://softxels.gatunes.com/)
 
-
-### Live example
-
-[https://softxels.gatunes.com/](https://softxels.gatunes.com/)
-
 ### Installation
 
 ```bash
 npm install softxels
 ```
 
-### Usage
+### Basic usage
 
 ```js
 import World from 'softxels';
@@ -40,6 +35,11 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 ```
+
+### Full example
+
+ * Live demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+ * Source: [example/main.js](example/main.js)
 
 ### Modifying the WASM programs
 
