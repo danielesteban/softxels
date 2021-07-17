@@ -43,4 +43,5 @@ export default {
     ] : []),
   ],
   external: ['three'],
+  watch: { clearScreen: false },
 };
