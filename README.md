@@ -39,8 +39,8 @@ renderer.setAnimationLoop(() => {
 
 ### Full example
 
- * Live demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
  * Source: [example/main.js](example/main.js)
+ * Live demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
 
 ### Modifying the WASM programs
 
