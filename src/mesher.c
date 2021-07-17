@@ -3,7 +3,6 @@
 int edgeTable[256];
 int triTable[256][16];
 
-
 typedef struct {
   const unsigned char value;
   const unsigned char r;
