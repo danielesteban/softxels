@@ -31,7 +31,10 @@ class Main extends Scene {
     light.add(light.target);
     this.player.camera.add(light);
     this.add(this.player);
+    const chunkSize = 32;
+    this.player.position.setScalar(chunkSize * 0.5);
     this.world = new World({
+      chunkSize,
       shader: 'phong',
     });
     this.add(this.world);
