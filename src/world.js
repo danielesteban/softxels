@@ -1,7 +1,4 @@
-import {
-  Object3D,
-  Vector3,
-} from 'three';
+import { Group, Vector3 } from 'three';
 import Chunk from './chunk.js';
 import MesherProgram from './mesher.wasm';
 import MesherWorker from 'web-worker:./mesher.js';
@@ -9,7 +6,7 @@ import WorldGenProgram from './worldgen.wasm';
 import WorldGenWorker from 'web-worker:./worldgen.js';
 import Worker from './worker.js';
 
-class World extends Object3D {
+class World extends Group {
   constructor({
     chunkSize = 32,
     isolevel = 0.7,
