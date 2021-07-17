@@ -24,6 +24,7 @@ export default {
     copy({
       targets: [
         { src: 'index.*', dest: 'dist' },
+        { src: 'screenshot.png', dest: 'dist' },
       ],
       copyOnce: !process.env.ROLLUP_WATCH,
     }),
