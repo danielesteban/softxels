@@ -15,7 +15,9 @@ npm install softxels
 
 ```js
 import { World } from 'softxels';
+import { Scene } from 'three';
 
+const scene = new Scene();
 const world = new World({
   chunkSize: 32,
   isolevel: 0.7,
@@ -24,7 +26,8 @@ const world = new World({
 });
 scene.add(world);
 
-onAnimationTick() {
+renderer.setAnimationLoop(() => {
   world.updateChunks(camera.position);
-}
+  renderer.render(scene, camera);
+});
 ```
