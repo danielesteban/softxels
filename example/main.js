@@ -1,8 +1,9 @@
 import {
   Color,
   FogExp2,
-  PointLight,
+  SpotLight,
   Scene,
+  Vector3,
 } from 'three';
 import { World } from 'softxels';
 import Player from './core/player.js';
@@ -28,7 +29,10 @@ class Main extends Scene {
       camera: renderer.camera,
       dom: renderer.dom,
     });
-    this.player.add(new PointLight(0xFFFFFF, 0.5, 32));
+    const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
+    light.target.position.set(0, 0, -1);
+    light.add(light.target);
+    this.player.camera.add(light);
     this.add(this.player);
     this.world = new World({
       shader: 'phong',
