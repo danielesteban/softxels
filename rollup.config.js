@@ -38,8 +38,8 @@ export default {
           version: '0.0.7',
           homepage: 'https://softxels.gatunes.com',
           repository: {
-            'type': 'git',
-            'url': 'https://github.com/danielesteban/softxels',
+            type: 'git',
+            url: 'https://github.com/danielesteban/softxels',
           },
           dependencies: {
             three: '^0.130.1',
