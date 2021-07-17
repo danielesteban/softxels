@@ -46,7 +46,7 @@ export default {
       terser(),
       {
         writeBundle() {
-          fs.writeFileSync(path.join(__dirname, 'dist', 'CNAME'), 'softxels.gatunes.com');
+          fs.writeFileSync(path.join(outputPath, 'CNAME'), 'softxels.gatunes.com');
         },
       },
     ]),
