@@ -1,4 +1,9 @@
-import { Color, FogExp2, Scene } from 'three';
+import {
+  Color,
+  FogExp2,
+  PointLight,
+  Scene,
+} from 'three';
 import { World } from 'softxels';
 import Player from './player.js';
 import Renderer from './renderer.js';
@@ -23,9 +28,11 @@ class Main extends Scene {
       camera: renderer.camera,
       dom: renderer.dom,
     });
-    this.player.position.set(0, 0, 0);
+    this.player.add(new PointLight(0xFFFFFF, 0.5, 32));
     this.add(this.player);
-    this.world = new World();
+    this.world = new World({
+      shader: 'phong',
+    });
     this.add(this.world);
   }
 

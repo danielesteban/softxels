@@ -27,6 +27,7 @@ const world = new World({
   isolevel: 0.7,
   renderRadius: 5,
   seed: Math.floor(Math.random() * 2147483647),
+  shader: 'basic',
 });
 scene.add(world);
 

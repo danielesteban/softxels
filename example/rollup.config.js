@@ -18,6 +18,11 @@ export default {
     format: 'iife',
   },
   plugins: [
+    ...(process.env.ROLLUP_WATCH ? [
+      alias({
+        entries: { 'softxels': path.join(__dirname, '..', 'dist') },
+      }),
+    ] : []),
     commonjs(),
     resolve({
       browser: true,
@@ -31,9 +36,6 @@ export default {
       copyOnce: !process.env.ROLLUP_WATCH,
     }),
     ...(process.env.ROLLUP_WATCH ? [
-      alias({
-        entries: { 'softxels': path.join(__dirname, '..', 'dist') },
-      }),
       serve({
         contentBase: outputPath,
         port: 8080,

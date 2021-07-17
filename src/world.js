@@ -15,13 +15,13 @@ class World extends Object3D {
     isolevel = 0.7,
     renderRadius = 5,
     seed = Math.floor(Math.random() * 2147483647),
+    shader = 'basic',
   } = {}) {
     super();
-    this.aux = {
-      chunk: new Vector3(),
-    };
-    this.anchorChunk = new Vector3(Infinity, Infinity, Infinity);
     this.chunkSize = chunkSize;
+    this.shader = shader;
+    this.chunk = new Vector3();
+    this.anchorChunk = new Vector3(Infinity, Infinity, Infinity);
     this.dataChunks = new Map();
     this.renderChunks = new Map();
     this.renderRadius = renderRadius;
@@ -71,7 +71,7 @@ class World extends Object3D {
   }
 
   loadChunk(x, y, z) {
-    const { chunkSize, dataChunks, renderChunks, loading, workers } = this;
+    const { chunkSize, dataChunks, renderChunks, loading, shader, workers } = this;
     const key = `${z}:${y}:${x}`;
     if (renderChunks.has(key) || loading.mesh.has(key)) {
       return;
@@ -105,6 +105,7 @@ class World extends Object3D {
       const chunk = new Chunk({
         chunkSize,
         position: { x, y, z },
+        shader,
         vertices,
       });
       this.add(chunk);
@@ -113,7 +114,7 @@ class World extends Object3D {
   }
 
   updateChunks(anchor) {
-    const { aux: { chunk }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
+    const { anchorChunk, chunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(chunk.copy(anchor)).divideScalar(chunkSize).floor();
     if (anchorChunk.equals(chunk)) {
       return;

@@ -26,7 +26,7 @@ export default {
           author: 'Daniel Esteban Nombela',
           license: 'MIT',
           module: 'softxels.js',
-          version: '0.0.2',
+          version: '0.0.3',
           homepage: 'https://softxels.gatunes.com',
           repository: {
             'type': 'git',
