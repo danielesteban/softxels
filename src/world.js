@@ -160,10 +160,6 @@ class World extends Object3D {
         );
         data[index] = value;
         affected.set(key, true);
-
-        // THIS IS FAST BUT KINDA HORRIBLE!!
-        // TODO: Figure out a smarter way of doing this
-        const neighbors = [];
         if (voxel.x === 0) {
           affected.set(`${chunk.z}:${chunk.y}:${chunk.x - 1}`, true);
         }
@@ -179,32 +175,11 @@ class World extends Object3D {
         if (voxel.x === 0 && voxel.y === 0) {
           affected.set(`${chunk.z}:${chunk.y - 1}:${chunk.x - 1}`, true);
         }
-        if (voxel.x === 0 && voxel.z === 0) {
-          affected.set(`${chunk.z - 1}:${chunk.y}:${chunk.x - 1}`, true);
-        }
         if (voxel.y === 0 && voxel.z === 0) {
           affected.set(`${chunk.z - 1}:${chunk.y - 1}:${chunk.x}`, true);
         }
-        if (voxel.x === chunkSize - 1) {
-          affected.set(`${chunk.z}:${chunk.y}:${chunk.x + 1}`, true);
-        }
-        if (voxel.y === chunkSize - 1) {
-          affected.set(`${chunk.z}:${chunk.y + 1}:${chunk.x}`, true);
-        }
-        if (voxel.z === chunkSize - 1) {
-          affected.set(`${chunk.z + 1}:${chunk.y}:${chunk.x}`, true);
-        }
-        if (voxel.x === chunkSize - 1 && voxel.y === chunkSize - 1 && voxel.z === chunkSize - 1) {
-          affected.set(`${chunk.z + 1}:${chunk.y + 1}:${chunk.x + 1}`, true);
-        }
-        if (voxel.x === chunkSize - 1 && voxel.y === chunkSize - 1) {
-          affected.set(`${chunk.z}:${chunk.y + 1}:${chunk.x + 1}`, true);
-        }
-        if (voxel.x === chunkSize - 1 && voxel.z === chunkSize - 1) {
-          affected.set(`${chunk.z + 1}:${chunk.y}:${chunk.x + 1}`, true);
-        }
-        if (voxel.y === chunkSize - 1 && voxel.z === chunkSize - 1) {
-          affected.set(`${chunk.z + 1}:${chunk.y + 1}:${chunk.x}`, true);
+        if (voxel.x === 0 && voxel.z === 0) {
+          affected.set(`${chunk.z - 1}:${chunk.y}:${chunk.x - 1}`, true);
         }
       }
     });

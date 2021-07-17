@@ -59,7 +59,7 @@ class Main extends Scene {
         world.updateVolume(
           hit.point,
           1,
-          player.buttons.primaryDown ? 255 : 0
+          player.buttons.primaryDown ? 0xFF : 0
         );
       }
     }
