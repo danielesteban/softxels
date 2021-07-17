@@ -18,7 +18,7 @@ npm install softxels
 ### Usage
 
 ```js
-import { World } from 'softxels';
+import World from 'softxels';
 import { Scene } from 'three';
 
 const scene = new Scene();

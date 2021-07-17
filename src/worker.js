@@ -38,6 +38,11 @@ class Worker {
     });
   }
 
+  dispose() {
+    const { instances } = this;
+    instances.forEach((instance) => instance.terminate());
+  }
+
   run(operation) {
     const { instances, queue } = this;
     return new Promise((resolve) => {

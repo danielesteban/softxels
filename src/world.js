@@ -20,7 +20,10 @@ class World extends Object3D {
     super();
     this.chunkSize = chunkSize;
     this.shader = shader;
-    this.chunk = new Vector3();
+    this.aux = {
+      chunk: new Vector3(),
+      voxel: new Vector3(),
+    };
     this.anchorChunk = new Vector3(Infinity, Infinity, Infinity);
     this.dataChunks = new Map();
     this.renderChunks = new Map();
@@ -45,6 +48,12 @@ class World extends Object3D {
         script: WorldGenWorker,
       }),
     };
+  }
+
+  dispose() {
+    const { renderChunks, workers } = this;
+    renderChunks.forEach((mesh) => mesh.dispose());
+    [workers.mesher, workers.worldgen].forEach((worker) => worker.dispose());
   }
 
   generateChunk(x, y, z) {
@@ -97,7 +106,7 @@ class World extends Object3D {
     }
     loading.neighbors.delete(key);
     loading.mesh.set(key);
-    workers.mesher.run({ chunks: neighbors }).then((vertices) => {
+    return workers.mesher.run({ chunks: neighbors }).then((vertices) => {
       if (!vertices) {
         return;
       }
@@ -114,7 +123,7 @@ class World extends Object3D {
   }
 
   updateChunks(anchor) {
-    const { anchorChunk, chunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
+    const { aux: { chunk }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(chunk.copy(anchor)).divideScalar(chunkSize).floor();
     if (anchorChunk.equals(chunk)) {
       return;
@@ -125,6 +134,7 @@ class World extends Object3D {
       if (
         anchorChunk.distanceTo(mesh.chunk) > maxDistance
       ) {
+        mesh.dispose();
         this.remove(mesh);
         renderChunks.delete(key);
       }
@@ -132,6 +142,109 @@ class World extends Object3D {
     renderGrid.forEach(({ x, y, z }) => {
       this.loadChunk(chunk.x + x, chunk.y + y, chunk.z + z);
     });
+  }
+
+  updateVolume(point, radius, value) {
+    const { aux: { chunk, voxel }, chunkSize, dataChunks, renderChunks, loading } = this;
+    this.worldToLocal(point).floor();
+    const affected = new Map();
+    World.getBrush(radius).forEach((offset) => {
+      voxel.copy(point).add(offset);
+      chunk.copy(voxel).divideScalar(chunkSize).floor();
+      voxel.addScaledVector(chunk, -chunkSize).floor();
+      const key = `${chunk.z}:${chunk.y}:${chunk.x}`;
+      const data = dataChunks.get(key);
+      if (data) {
+        const index = (
+          (voxel.z * chunkSize * chunkSize + voxel.y * chunkSize + voxel.x) * 4
+        );
+        data[index] = value;
+        affected.set(key, true);
+
+        // THIS IS FAST BUT KINDA HORRIBLE!!
+        // TODO: Figure out a smarter way of doing this
+        const neighbors = [];
+        if (voxel.x === 0) {
+          affected.set(`${chunk.z}:${chunk.y}:${chunk.x - 1}`, true);
+        }
+        if (voxel.y === 0) {
+          affected.set(`${chunk.z}:${chunk.y - 1}:${chunk.x}`, true);
+        }
+        if (voxel.z === 0) {
+          affected.set(`${chunk.z - 1}:${chunk.y}:${chunk.x}`, true);
+        }
+        if (voxel.x === 0 && voxel.y === 0 && voxel.z === 0) {
+          affected.set(`${chunk.z - 1}:${chunk.y - 1}:${chunk.x - 1}`, true);
+        }
+        if (voxel.x === 0 && voxel.y === 0) {
+          affected.set(`${chunk.z}:${chunk.y - 1}:${chunk.x - 1}`, true);
+        }
+        if (voxel.x === 0 && voxel.z === 0) {
+          affected.set(`${chunk.z - 1}:${chunk.y}:${chunk.x - 1}`, true);
+        }
+        if (voxel.y === 0 && voxel.z === 0) {
+          affected.set(`${chunk.z - 1}:${chunk.y - 1}:${chunk.x}`, true);
+        }
+        if (voxel.x === chunkSize - 1) {
+          affected.set(`${chunk.z}:${chunk.y}:${chunk.x + 1}`, true);
+        }
+        if (voxel.y === chunkSize - 1) {
+          affected.set(`${chunk.z}:${chunk.y + 1}:${chunk.x}`, true);
+        }
+        if (voxel.z === chunkSize - 1) {
+          affected.set(`${chunk.z + 1}:${chunk.y}:${chunk.x}`, true);
+        }
+        if (voxel.x === chunkSize - 1 && voxel.y === chunkSize - 1 && voxel.z === chunkSize - 1) {
+          affected.set(`${chunk.z + 1}:${chunk.y + 1}:${chunk.x + 1}`, true);
+        }
+        if (voxel.x === chunkSize - 1 && voxel.y === chunkSize - 1) {
+          affected.set(`${chunk.z}:${chunk.y + 1}:${chunk.x + 1}`, true);
+        }
+        if (voxel.x === chunkSize - 1 && voxel.z === chunkSize - 1) {
+          affected.set(`${chunk.z + 1}:${chunk.y}:${chunk.x + 1}`, true);
+        }
+        if (voxel.y === chunkSize - 1 && voxel.z === chunkSize - 1) {
+          affected.set(`${chunk.z + 1}:${chunk.y + 1}:${chunk.x}`, true);
+        }
+      }
+    });
+    affected.forEach((v, key) => {
+      const mesh = renderChunks.get(key);
+      renderChunks.delete(key);
+      if (!mesh) {
+        loading.mesh.delete(key);
+      }
+      const [z, y, x] = key.split(':');
+      this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10))
+        .then(() => {
+          if (mesh) {
+            mesh.dispose();
+            this.remove(mesh);
+          }
+        });
+    });
+  }
+
+  static getBrush(radius) {
+    const { brushes } = World;
+    let brush = brushes.get(radius);
+    if (!brush) {
+      brush = [];
+      const center = (new Vector3()).setScalar(0.5);
+      for (let z = -radius; z <= radius + 1; z += 1) {
+        for (let y = -radius; y <= radius + 1; y += 1) {
+          for (let x = -radius; x <= radius + 1; x += 1) {
+            const point = new Vector3(x, y, z);
+            if (point.distanceTo(center) <= radius) {
+              brush.push(point);
+            }
+          }
+        }
+      }
+      brush.sort((a, b) => (a.distanceTo(center) - b.distanceTo(center)));
+      brushes.set(radius, brush);
+    }
+    return brush;
   }
 
   static getRenderGrid(radius) {
@@ -151,5 +264,7 @@ class World extends Object3D {
     return grid;
   }
 }
+
+World.brushes = new Map();
 
 export default World;

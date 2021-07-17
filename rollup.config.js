@@ -8,7 +8,7 @@ import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 const outputPath = path.resolve(__dirname, 'dist');
 
 export default {
-  input: path.join(__dirname, 'index.js'),
+  input: path.join(__dirname, 'src', 'world.js'),
   output: {
     file: path.join(outputPath, 'softxels.js'),
     format: 'esm',
@@ -35,7 +35,7 @@ export default {
           author: 'Daniel Esteban Nombela',
           license: 'MIT',
           module: 'softxels.js',
-          version: '0.0.4',
+          version: '0.0.5',
           homepage: 'https://softxels.gatunes.com',
           repository: {
             'type': 'git',

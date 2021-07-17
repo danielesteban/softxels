@@ -44,6 +44,11 @@ class Chunk extends Mesh {
     this.chunk = (new Vector3()).copy(position);
     this.position.copy(position).multiplyScalar(chunkSize);
   }
+
+  dispose() {
+    const { geometry } = this;
+    geometry.dispose();
+  }
 }
 
 export default Chunk;

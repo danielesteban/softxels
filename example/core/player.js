@@ -9,7 +9,7 @@ import {
 class Player extends Group {
   constructor({
     camera,
-    dom,
+    renderer,
   }) {
     super();
 
@@ -28,9 +28,9 @@ class Player extends Group {
     };
     this.buttonState = { ...this.buttons };
     this.camera = camera;
-    this.keyboard = new Vector3(0, 0, 0),
-    this.pointer = new Vector2(0, 0),
-    this.raycaster = new Raycaster(),
+    this.keyboard = new Vector3(0, 0, 0);
+    this.pointer = new Vector2(0, 0);
+    this.raycaster = new Raycaster();
     this.speed = 6;
     this.add(camera);
 
@@ -51,7 +51,7 @@ class Player extends Group {
     document.addEventListener('mouseup', this.onMouseUp);
     document.addEventListener('wheel', this.onMouseWheel, false);
     document.addEventListener('pointerlockchange', this.onPointerLock);
-    dom.renderer.addEventListener('mousedown', this.requestPointerLock);
+    renderer.addEventListener('mousedown', this.requestPointerLock);
   }
 
   onAnimationTick(animation) {
