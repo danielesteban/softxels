@@ -81,17 +81,19 @@ static void growBox(
   if (box->max.z < vertex->z) box->max.z = vertex->z;
 }
 
-static const Vertex interpolate(const unsigned char isolevel, Point p1, Point p2) {
-  const float step = ((float) isolevel - (float) p1.voxel->value) / ((float) p2.voxel->value - (float) p1.voxel->value);
-  const Vertex vertex = {
-    round((float) p1.x + step * ((float) p2.x - (float) p1.x)),
-    round((float) p1.y + step * ((float) p2.y - (float) p1.y)),
-    round((float) p1.z + step * ((float) p2.z - (float) p1.z)),
-    round((float) p1.voxel->r + step * ((float) p2.voxel->r - (float) p1.voxel->r)),
-    round((float) p1.voxel->g + step * ((float) p2.voxel->g - (float) p1.voxel->g)),
-    round((float) p1.voxel->b + step * ((float) p2.voxel->b - (float) p1.voxel->b))
-  };
-  return vertex;
+static void interpolate(
+  Vertex* vertex,
+  const Point* p1,
+  const Point* p2,
+  const unsigned char isolevel
+) {
+  const float step = ((float) isolevel - (float) p1->voxel->value) / ((float) p2->voxel->value - (float) p1->voxel->value);
+  vertex->x = round((float) p1->x + step * ((float) p2->x - (float) p1->x));
+  vertex->y = round((float) p1->y + step * ((float) p2->y - (float) p1->y));
+  vertex->z = round((float) p1->z + step * ((float) p2->z - (float) p1->z));
+  vertex->r = round((float) p1->voxel->r + step * ((float) p2->voxel->r - (float) p1->voxel->r));
+  vertex->g = round((float) p1->voxel->g + step * ((float) p2->voxel->g - (float) p1->voxel->g));
+  vertex->b = round((float) p1->voxel->b + step * ((float) p2->voxel->b - (float) p1->voxel->b));
 }
 
 const unsigned int run(
@@ -134,40 +136,40 @@ const unsigned int run(
 
         Vertex vertlist[12];
         if (edgeTable[cubeindex] & 1)
-          vertlist[0] = interpolate(isolevel, points[0], points[1]);
+          interpolate(&vertlist[0], &points[0], &points[1], isolevel);
         if (edgeTable[cubeindex] & 2)
-          vertlist[1] = interpolate(isolevel, points[1], points[2]);
+          interpolate(&vertlist[1], &points[1], &points[2], isolevel);
         if (edgeTable[cubeindex] & 4)
-          vertlist[2] = interpolate(isolevel, points[2], points[3]);
+          interpolate(&vertlist[2], &points[2], &points[3], isolevel);
         if (edgeTable[cubeindex] & 8)
-          vertlist[3] = interpolate(isolevel, points[3], points[0]);
+          interpolate(&vertlist[3], &points[3], &points[0], isolevel);
         if (edgeTable[cubeindex] & 16)
-          vertlist[4] = interpolate(isolevel, points[4], points[5]);
+          interpolate(&vertlist[4], &points[4], &points[5], isolevel);
         if (edgeTable[cubeindex] & 32)
-          vertlist[5] = interpolate(isolevel, points[5], points[6]);
+          interpolate(&vertlist[5], &points[5], &points[6], isolevel);
         if (edgeTable[cubeindex] & 64)
-          vertlist[6] = interpolate(isolevel, points[6], points[7]);
+          interpolate(&vertlist[6], &points[6], &points[7], isolevel);
         if (edgeTable[cubeindex] & 128)
-          vertlist[7] = interpolate(isolevel, points[7], points[4]);
+          interpolate(&vertlist[7], &points[7], &points[4], isolevel);
         if (edgeTable[cubeindex] & 256)
-          vertlist[8] = interpolate(isolevel, points[0], points[4]);
+          interpolate(&vertlist[8], &points[0], &points[4], isolevel);
         if (edgeTable[cubeindex] & 512)
-          vertlist[9] = interpolate(isolevel, points[1], points[5]);
+          interpolate(&vertlist[9], &points[1], &points[5], isolevel);
         if (edgeTable[cubeindex] & 1024)
-          vertlist[10] = interpolate(isolevel, points[2], points[6]);
+          interpolate(&vertlist[10], &points[2], &points[6], isolevel);
         if (edgeTable[cubeindex] & 2048)
-          vertlist[11] = interpolate(isolevel, points[3], points[7]);
+          interpolate(&vertlist[11], &points[3], &points[7], isolevel);
 
         for (int i = 0; triTable[cubeindex][i] != -1; i += 3) {
           for (int v = 0; v < 3; v += 1) {
-            const Vertex vertex = vertlist[triTable[cubeindex][i + v]];
-            vertices[offset++] = vertex.x;
-            vertices[offset++] = vertex.y;
-            vertices[offset++] = vertex.z;
-            vertices[offset++] = vertex.r;
-            vertices[offset++] = vertex.g;
-            vertices[offset++] = vertex.b;
-            growBox(bounds, &vertex);
+            const Vertex* vertex = &vertlist[triTable[cubeindex][i + v]];
+            vertices[offset++] = vertex->x;
+            vertices[offset++] = vertex->y;
+            vertices[offset++] = vertex->z;
+            vertices[offset++] = vertex->r;
+            vertices[offset++] = vertex->g;
+            vertices[offset++] = vertex->b;
+            growBox(bounds, vertex);
           }
           triangles++;
         }
