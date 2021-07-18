@@ -52,11 +52,13 @@ static void computeNormal(Vector* normal, Vector** triangle) {
     triangle[0]->y - triangle[1]->y,
     triangle[0]->z - triangle[1]->z
   };
-  const float ax = cb.x, ay = cb.y, az = cb.z;
-	const float bx = ab.x, by = ab.y, bz = ab.z;
-	normal->x = ay * bz - az * by;
-	normal->y = az * bx - ax * bz;
-	normal->z = ax * by - ay * bx;
+	normal->x = cb.y * ab.z - cb.z * ab.y;
+	normal->y = cb.z * ab.x - cb.x * ab.z;
+	normal->z = cb.x * ab.y - cb.y * ab.x;
+  const float length = sqrt(normal->x * normal->x + normal->y * normal->y + normal->z * normal->z) || 1;
+  normal->x /= length;
+  normal->y /= length;
+  normal->z /= length;
 }
 
 static const Cell get(
