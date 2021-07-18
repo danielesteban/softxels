@@ -1,5 +1,7 @@
 #include <math.h>
 
+const unsigned char isolevel = 128;
+
 int edgeTable[256];
 int triTable[256][16];
 
@@ -84,8 +86,7 @@ static void growBox(
 static void interpolate(
   Vertex* vertex,
   const Point* p1,
-  const Point* p2,
-  const unsigned char isolevel
+  const Point* p2
 ) {
   const float step = ((float) isolevel - (float) p1->voxel->value) / ((float) p2->voxel->value - (float) p1->voxel->value);
   vertex->x = round((float) p1->x + step * ((float) p2->x - (float) p1->x));
@@ -100,8 +101,7 @@ const unsigned int run(
   Box* bounds,
   const Voxel* chunks,
   Vertex* vertices,
-  const unsigned char chunkSize,
-  const unsigned char isolevel
+  const unsigned char chunkSize
 ) {
   bounds->min.x = bounds->min.y = bounds->min.z = chunkSize;
   bounds->max.x = bounds->max.y = bounds->max.z = 0;
@@ -136,29 +136,29 @@ const unsigned int run(
 
         Vertex vertlist[12];
         if (edgeTable[cubeindex] & 1)
-          interpolate(&vertlist[0], &points[0], &points[1], isolevel);
+          interpolate(&vertlist[0], &points[0], &points[1]);
         if (edgeTable[cubeindex] & 2)
-          interpolate(&vertlist[1], &points[1], &points[2], isolevel);
+          interpolate(&vertlist[1], &points[1], &points[2]);
         if (edgeTable[cubeindex] & 4)
-          interpolate(&vertlist[2], &points[2], &points[3], isolevel);
+          interpolate(&vertlist[2], &points[2], &points[3]);
         if (edgeTable[cubeindex] & 8)
-          interpolate(&vertlist[3], &points[3], &points[0], isolevel);
+          interpolate(&vertlist[3], &points[3], &points[0]);
         if (edgeTable[cubeindex] & 16)
-          interpolate(&vertlist[4], &points[4], &points[5], isolevel);
+          interpolate(&vertlist[4], &points[4], &points[5]);
         if (edgeTable[cubeindex] & 32)
-          interpolate(&vertlist[5], &points[5], &points[6], isolevel);
+          interpolate(&vertlist[5], &points[5], &points[6]);
         if (edgeTable[cubeindex] & 64)
-          interpolate(&vertlist[6], &points[6], &points[7], isolevel);
+          interpolate(&vertlist[6], &points[6], &points[7]);
         if (edgeTable[cubeindex] & 128)
-          interpolate(&vertlist[7], &points[7], &points[4], isolevel);
+          interpolate(&vertlist[7], &points[7], &points[4]);
         if (edgeTable[cubeindex] & 256)
-          interpolate(&vertlist[8], &points[0], &points[4], isolevel);
+          interpolate(&vertlist[8], &points[0], &points[4]);
         if (edgeTable[cubeindex] & 512)
-          interpolate(&vertlist[9], &points[1], &points[5], isolevel);
+          interpolate(&vertlist[9], &points[1], &points[5]);
         if (edgeTable[cubeindex] & 1024)
-          interpolate(&vertlist[10], &points[2], &points[6], isolevel);
+          interpolate(&vertlist[10], &points[2], &points[6]);
         if (edgeTable[cubeindex] & 2048)
-          interpolate(&vertlist[11], &points[3], &points[7], isolevel);
+          interpolate(&vertlist[11], &points[3], &points[7]);
 
         for (int i = 0; triTable[cubeindex][i] != -1; i += 3) {
           for (int v = 0; v < 3; v += 1) {

@@ -2,7 +2,7 @@ import instantiate from './program.js';
 
 let program;
 
-const onLoad = ({ data: { options: { chunkSize, isolevel }, program: module } }) => {
+const onLoad = ({ data: { options: { chunkSize }, program: module } }) => {
   instantiate({
     memory: [
       { id: 'bounds', type: Uint8Array, size: 6 },
@@ -14,7 +14,6 @@ const onLoad = ({ data: { options: { chunkSize, isolevel }, program: module } })
     .then(({ memory, run }) => {
       program = {
         chunkSize,
-        isolevel,
         memory,
         run,
       };
@@ -35,8 +34,7 @@ const onData = ({ data: { chunks } }) => {
     program.memory.bounds.address,
     program.memory.chunks.address,
     program.memory.vertices.address,
-    program.chunkSize,
-    program.isolevel
+    program.chunkSize
   );
   if (triangles === 0) {
     self.postMessage(false);

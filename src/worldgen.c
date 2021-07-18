@@ -52,7 +52,7 @@ void run(
     for (int y = chunkY; y < chunkY + chunkSize; y++) {
       for (int x = chunkX; x < chunkX + chunkSize; x++, i++) {
         chunk[i].value = (
-          0xFF - (fabs(fnlGetNoise3D(&noise, x * 1.5f, y * 1.5f, z * 1.5f)) * 0xFF)
+          0xFF - fmin(fabs(fnlGetNoise3D(&noise, x * 1.5f, y * 1.5f, z * 1.5f)) * 384.0f, 255.0f)
         );
         setColorFromNoise(
           &chunk[i],

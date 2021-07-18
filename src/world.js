@@ -9,7 +9,6 @@ import Worker from './worker.js';
 class World extends Group {
   constructor({
     chunkSize = 32,
-    isolevel = 0.7,
     renderRadius = 5,
     seed = Math.floor(Math.random() * 2147483647),
     shader = 'basic',
@@ -33,7 +32,7 @@ class World extends Group {
     };
     this.workers = {
       mesher: new Worker({
-        options: { chunkSize, isolevel: Math.floor(isolevel * 0xFF) },
+        options: { chunkSize },
         instances: 4,
         program: MesherProgram,
         script: MesherWorker,
@@ -184,10 +183,8 @@ class World extends Group {
     });
     affected.forEach((v, key) => {
       const mesh = renderChunks.get(key);
+      loading.mesh.delete(key);
       renderChunks.delete(key);
-      if (!mesh) {
-        loading.mesh.delete(key);
-      }
       const [z, y, x] = key.split(':');
       this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10))
         .then(() => {
