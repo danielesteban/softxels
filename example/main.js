@@ -39,14 +39,6 @@ class Main extends Scene {
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
 
-    (new AudioLoader()).load('/sounds/plop.ogg', (buffer) => {
-      if (!renderer.listener) {
-        this.sfxBuffer = buffer;
-        return;
-      }
-      this.loadSFX(buffer);
-    });
-
     this.world = new World({
       chunkSize,
       shader: 'phong',
@@ -65,7 +57,7 @@ class Main extends Scene {
     ) {
       const [hit] = player.raycaster.intersectObjects(this.world.children);
       if (hit) {
-        hit.point.addScaledVector(hit.face.normal.normalize(), -Number.EPSILON);
+        hit.point.addScaledVector(hit.face.normal.normalize(), -0.25);
         const affected = world.updateVolume(
           hit.point,
           1,
@@ -85,24 +77,23 @@ class Main extends Scene {
   }
 
   onFirstInteraction() {
-    const { sfxBuffer } = this;
-    if (!sfxBuffer) {
-      return;
+    {
+      const ambient = new Audio('/sounds/ambient.ogg');
+      ambient.loop = true;
+      ambient.play();
     }
-    delete this.sfxBuffer;
-    this.loadSFX(sfxBuffer);
-  }
-
-  loadSFX(buffer) {
-    this.sfx = [...Array(5)].map(() => {
-      const audio = new PositionalAudio(renderer.listener);
-      audio.filter = audio.context.createBiquadFilter();
-      audio.setBuffer(buffer);
-      audio.setFilter(audio.filter);
-      audio.setRefDistance(8);
-      this.add(audio);
-      return audio;
-    });
+    (new AudioLoader()).loadAsync('/sounds/plop.ogg')
+      .then((buffer) => {
+        this.sfx = [...Array(5)].map(() => {
+          const audio = new PositionalAudio(renderer.listener);
+          audio.filter = audio.context.createBiquadFilter();
+          audio.setBuffer(buffer);
+          audio.setFilter(audio.filter);
+          audio.setRefDistance(8);
+          this.add(audio);
+          return audio;
+        });
+      });
   }
 }
 

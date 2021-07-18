@@ -32,6 +32,7 @@ class Renderer {
 
     this.onFirstInteraction = this.onFirstInteraction.bind(this);
     window.addEventListener('click', this.onFirstInteraction, false);
+    window.addEventListener('keydown', this.onFirstInteraction, false);
 
     window.addEventListener('resize', this.onResize.bind(this), false);
     this.onResize();
@@ -72,6 +73,7 @@ class Renderer {
   onFirstInteraction() {
     const { scene } = this;
     window.removeEventListener('click', this.onFirstInteraction);
+    window.removeEventListener('keydown', this.onFirstInteraction);
     this.listener = new AudioListener();
     scene.onFirstInteraction();
   }
