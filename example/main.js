@@ -2,6 +2,7 @@ import {
   AudioLoader,
   Color,
   FogExp2,
+  MeshPhongMaterial,
   PositionalAudio,
   SpotLight,
   Scene,
@@ -40,8 +41,8 @@ class Main extends Scene {
     this.add(this.player);
 
     this.world = new World({
+      chunkMaterial: new MeshPhongMaterial({ vertexColors: true }),
       chunkSize,
-      shader: 'phong',
     });
     this.add(this.world);
   }

@@ -23,10 +23,8 @@ const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const world = new World({
-  chunkSize: 32,
   renderRadius: 5,
   seed: Math.floor(Math.random() * 2147483647),
-  shader: 'basic',
 });
 scene.add(world);
 

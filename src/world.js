@@ -8,14 +8,14 @@ import Worker from './worker.js';
 
 class World extends Group {
   constructor({
+    chunkMaterial = null,
     chunkSize = 32,
     renderRadius = 5,
     seed = Math.floor(Math.random() * 2147483647),
-    shader = 'basic',
   } = {}) {
     super();
+    this.chunkMaterial = chunkMaterial;
     this.chunkSize = chunkSize;
-    this.shader = shader;
     this.aux = {
       chunk: new Vector3(),
       voxel: new Vector3(),
@@ -76,7 +76,7 @@ class World extends Group {
   }
 
   loadChunk(x, y, z) {
-    const { chunkSize, dataChunks, renderChunks, loading, shader, workers } = this;
+    const { chunkMaterial, chunkSize, dataChunks, renderChunks, loading, workers } = this;
     const key = `${z}:${y}:${x}`;
     if (renderChunks.has(key) || loading.mesh.has(key)) {
       return;
@@ -111,9 +111,9 @@ class World extends Group {
       const { bounds, vertices } = geometry;
       const chunk = new Chunk({
         bounds,
+        chunkMaterial,
         chunkSize,
         position: { x, y, z },
-        shader,
         vertices,
       });
       this.add(chunk);

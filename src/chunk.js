@@ -4,38 +4,25 @@ import {
   InterleavedBuffer,
   InterleavedBufferAttribute,
   Mesh,
-  ShaderLib,
-  ShaderMaterial,
+  MeshBasicMaterial,
   Sphere,
-  UniformsUtils,
   Vector3,
 } from 'three';
 
 class Chunk extends Mesh {
-  static setupMaterials() {
-    Chunk.materials = ['basic', 'phong'].reduce((materials, shader) => {
-      const { uniforms, vertexShader, fragmentShader } = ShaderLib[shader];
-      materials[shader] = new ShaderMaterial({
-        uniforms: UniformsUtils.clone(uniforms),
-        vertexShader,
-        fragmentShader,
-        vertexColors: true,
-        fog: true,
-        lights: shader !== 'basic',
-      });
-      return materials;
-    }, {});
+  static setupMaterial() {
+    Chunk.material = new MeshBasicMaterial({ vertexColors: true });
   }
 
   constructor({
     bounds,
+    chunkMaterial,
     chunkSize,
     position,
-    shader,
     vertices,
   }) {
-    if (!Chunk.materials) {
-      Chunk.setupMaterials();
+    if (!Chunk.material) {
+      Chunk.setupMaterial();
     }
     const buffer = new InterleavedBuffer(vertices, 9);
     const geometry = new BufferGeometry();
@@ -47,7 +34,7 @@ class Chunk extends Mesh {
       new Vector3(bounds[3], bounds[4], bounds[5])
     );
     geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new Sphere());
-    super(geometry, Chunk.materials[shader]);
+    super(geometry, chunkMaterial || Chunk.material);
     this.chunk = (new Vector3()).copy(position);
     this.position.copy(position).multiplyScalar(chunkSize);
 }
