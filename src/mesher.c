@@ -99,7 +99,7 @@ static void interpolate(
 const unsigned int run(
   Box* bounds,
   const Voxel* chunks,
-  unsigned char* vertices,
+  Vertex* vertices,
   const unsigned char chunkSize,
   const unsigned char isolevel
 ) {
@@ -163,12 +163,7 @@ const unsigned int run(
         for (int i = 0; triTable[cubeindex][i] != -1; i += 3) {
           for (int v = 0; v < 3; v += 1) {
             const Vertex* vertex = &vertlist[triTable[cubeindex][i + v]];
-            vertices[offset++] = vertex->x;
-            vertices[offset++] = vertex->y;
-            vertices[offset++] = vertex->z;
-            vertices[offset++] = vertex->r;
-            vertices[offset++] = vertex->g;
-            vertices[offset++] = vertex->b;
+            vertices[offset++] = *vertex;
             growBox(bounds, vertex);
           }
           triangles++;
