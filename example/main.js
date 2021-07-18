@@ -56,6 +56,7 @@ class Main extends Scene {
     ) {
       const [hit] = player.raycaster.intersectObjects(this.world.children);
       if (hit) {
+        hit.point.addScaledVector(hit.face.normal.normalize(), -Number.EPSILON);
         world.updateVolume(
           hit.point,
           1,

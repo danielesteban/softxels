@@ -103,12 +103,14 @@ class World extends Group {
     }
     loading.neighbors.delete(key);
     loading.mesh.set(key);
-    return workers.mesher.run({ chunks: neighbors }).then((vertices) => {
-      if (!vertices) {
+    return workers.mesher.run({ chunks: neighbors }).then((geometry) => {
+      if (!geometry) {
         return;
       }
       loading.mesh.delete(key);
+      const { bounds, vertices } = geometry;
       const chunk = new Chunk({
+        bounds,
         chunkSize,
         position: { x, y, z },
         shader,

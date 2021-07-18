@@ -1,14 +1,14 @@
 #define FNL_IMPL
 #include "../vendor/FastNoiseLite/C/FastNoiseLite.h"
 
+fnl_state noise;
+
 typedef struct {
   unsigned char value;
   unsigned char r;
   unsigned char g;
   unsigned char b;
 } Voxel;
-
-fnl_state noise;
 
 static void setColorFromNoise(
   Voxel* voxel,

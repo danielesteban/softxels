@@ -26,6 +26,19 @@ typedef struct {
   unsigned char b;
 } Vertex;
 
+typedef struct {
+  struct {
+    unsigned char x;
+    unsigned char y;
+    unsigned char z;
+  } min;
+  struct {
+    unsigned char x;
+    unsigned char y;
+    unsigned char z;
+  } max;
+} Box;
+
 static const Point get(
   const Voxel* chunks,
   const unsigned char chunkSize,
@@ -56,6 +69,18 @@ static const Point get(
   return point;
 }
 
+static void growBox(
+  Box* box,
+  const Vertex* vertex
+) {
+  if (box->min.x > vertex->x) box->min.x = vertex->x;
+  if (box->min.y > vertex->y) box->min.y = vertex->y;
+  if (box->min.z > vertex->z) box->min.z = vertex->z;
+  if (box->max.x < vertex->x) box->max.x = vertex->x;
+  if (box->max.y < vertex->y) box->max.y = vertex->y;
+  if (box->max.z < vertex->z) box->max.z = vertex->z;
+}
+
 static const Vertex interpolate(const unsigned char isolevel, Point p1, Point p2) {
   const float step = ((float) isolevel - (float) p1.voxel->value) / ((float) p2.voxel->value - (float) p1.voxel->value);
   const Vertex vertex = {
@@ -70,11 +95,14 @@ static const Vertex interpolate(const unsigned char isolevel, Point p1, Point p2
 }
 
 const unsigned int run(
+  Box* bounds,
   const Voxel* chunks,
   unsigned char* vertices,
   const unsigned char chunkSize,
   const unsigned char isolevel
 ) {
+  bounds->min.x = bounds->min.y = bounds->min.z = chunkSize;
+  bounds->max.x = bounds->max.y = bounds->max.z = 0;
   unsigned int offset = 0;
   unsigned int triangles = 0;
   for (unsigned char z = 0; z < chunkSize; z++) {
@@ -139,6 +167,7 @@ const unsigned int run(
             vertices[offset++] = vertex.r;
             vertices[offset++] = vertex.g;
             vertices[offset++] = vertex.b;
+            growBox(bounds, &vertex);
           }
           triangles++;
         }

@@ -1,10 +1,12 @@
 import {
+  Box3,
   BufferGeometry,
   InterleavedBuffer,
   InterleavedBufferAttribute,
   Mesh,
   ShaderLib,
   ShaderMaterial,
+  Sphere,
   UniformsUtils,
   Vector3,
 } from 'three';
@@ -29,7 +31,13 @@ class Chunk extends Mesh {
     }, {});
   }
 
-  constructor({ chunkSize, position, shader, vertices }) {
+  constructor({
+    bounds,
+    chunkSize,
+    position,
+    shader,
+    vertices,
+  }) {
     if (!Chunk.materials) {
       Chunk.setupMaterials();
     }
@@ -40,10 +48,15 @@ class Chunk extends Mesh {
     if (shader !== 'basic') {
       geometry.computeVertexNormals();
     }
+    geometry.boundingBox = new Box3(
+      new Vector3(bounds[0], bounds[1], bounds[2]),
+      new Vector3(bounds[3], bounds[4], bounds[5])
+    );
+    geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new Sphere());
     super(geometry, Chunk.materials[shader]);
     this.chunk = (new Vector3()).copy(position);
     this.position.copy(position).multiplyScalar(chunkSize);
-  }
+}
 
   dispose() {
     const { geometry } = this;
