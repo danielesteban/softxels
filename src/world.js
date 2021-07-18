@@ -97,13 +97,14 @@ class World extends Group {
       }
     }
     if (needsData) {
-      loading.neighbors.set(key);
+      loading.neighbors.set(key, true);
       return;
     }
     loading.neighbors.delete(key);
-    loading.mesh.set(key);
+    const request = { abort: false };
+    loading.mesh.set(key, request);
     return workers.mesher.run({ chunks: neighbors }).then((geometry) => {
-      if (!geometry) {
+      if (!geometry || request.abort) {
         return;
       }
       loading.mesh.delete(key);
@@ -183,8 +184,11 @@ class World extends Group {
     });
     affected.forEach((v, key) => {
       const mesh = renderChunks.get(key);
-      loading.mesh.delete(key);
       renderChunks.delete(key);
+      if (loading.mesh.has(key)) {
+        loading.mesh.get(key).abort = true;
+        loading.mesh.delete(key);
+      }
       const [z, y, x] = key.split(':');
       this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10))
         .then(() => {
