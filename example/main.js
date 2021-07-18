@@ -1,9 +1,10 @@
 import {
+  AudioLoader,
   Color,
   FogExp2,
+  PositionalAudio,
   SpotLight,
   Scene,
-  Vector3,
 } from 'three';
 import World from 'softxels';
 import Player from './core/player.js';
@@ -38,6 +39,14 @@ class Main extends Scene {
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
 
+    (new AudioLoader()).load('/sounds/plop.ogg', (buffer) => {
+      if (!renderer.listener) {
+        this.sfxBuffer = buffer;
+        return;
+      }
+      this.loadSFX(buffer);
+    });
+
     this.world = new World({
       chunkSize,
       shader: 'phong',
@@ -46,7 +55,7 @@ class Main extends Scene {
   }
 
   onAnimationTick(animation) {
-    const { player, world } = this;
+    const { player, sfx, world } = this;
     player.onAnimationTick(animation);
     world.updateChunks(player.position);
 
@@ -57,13 +66,43 @@ class Main extends Scene {
       const [hit] = player.raycaster.intersectObjects(this.world.children);
       if (hit) {
         hit.point.addScaledVector(hit.face.normal.normalize(), -Number.EPSILON);
-        world.updateVolume(
+        const affected = world.updateVolume(
           hit.point,
           1,
           player.buttons.primaryDown ? 0xFF : 0
         );
+        if (affected && sfx) {
+          const audio = sfx.find(({ isPlaying }) => (!isPlaying));
+          if (audio) {
+            audio.filter.type = player.buttons.primaryDown ? 'highpass' : 'lowpass';
+            audio.filter.frequency.value = (Math.random() + 0.5) * 1000;
+            audio.position.copy(hit.point);
+            audio.play();
+          }
+        }
       }
     }
+  }
+
+  onFirstInteraction() {
+    const { sfxBuffer } = this;
+    if (!sfxBuffer) {
+      return;
+    }
+    delete this.sfxBuffer;
+    this.loadSFX(sfxBuffer);
+  }
+
+  loadSFX(buffer) {
+    this.sfx = [...Array(5)].map(() => {
+      const audio = new PositionalAudio(renderer.listener);
+      audio.filter = audio.context.createBiquadFilter();
+      audio.setBuffer(buffer);
+      audio.setFilter(audio.filter);
+      audio.setRefDistance(8);
+      this.add(audio);
+      return audio;
+    });
   }
 }
 

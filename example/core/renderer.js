@@ -1,5 +1,6 @@
 import {
   ACESFilmicToneMapping,
+  AudioListener,
   Clock,
   PerspectiveCamera,
   ShaderChunk,
@@ -29,6 +30,9 @@ class Renderer {
     this.renderer.setAnimationLoop(this.onAnimationTick.bind(this));
     dom.renderer.appendChild(this.renderer.domElement);
 
+    this.onFirstInteraction = this.onFirstInteraction.bind(this);
+    window.addEventListener('click', this.onFirstInteraction, false);
+
     window.addEventListener('resize', this.onResize.bind(this), false);
     this.onResize();
   }
@@ -39,6 +43,7 @@ class Renderer {
       clock,
       dom,
       fps,
+      listener,
       renderer,
       scene,
     } = this;
@@ -49,6 +54,10 @@ class Renderer {
     };
 
     scene.onAnimationTick(animation);
+    if (listener) {
+      camera.matrixWorld.decompose(listener.position, listener.quaternion, listener.scale);
+      listener.updateMatrixWorld();
+    }
     renderer.render(scene, camera);
 
     fps.count += 1;
@@ -58,6 +67,13 @@ class Renderer {
       fps.lastTick = animation.time;
       fps.count = 0;
     }
+  }
+
+  onFirstInteraction() {
+    const { scene } = this;
+    window.removeEventListener('click', this.onFirstInteraction);
+    this.listener = new AudioListener();
+    scene.onFirstInteraction();
   }
 
   onResize() {

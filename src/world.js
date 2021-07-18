@@ -197,6 +197,7 @@ class World extends Group {
           }
         });
     });
+    return affected.size;
   }
 
   static getBrush(radius) {
