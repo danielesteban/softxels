@@ -8,14 +8,14 @@
       "patterns": [
         "src/mesher.c"
       ],
-      "runOnChangeOnly": false
+      "runOnChangeOnly": true
     },
     "compile:worldgen": {
       "extensions": "c",
       "patterns": [
         "src/worldgen.c"
       ],
-      "runOnChangeOnly": false
+      "runOnChangeOnly": true
     }
   },
   "scripts": {
