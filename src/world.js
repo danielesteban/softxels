@@ -73,7 +73,7 @@ class World extends Group {
     loading.set(key, true);
     workers.worldgen.run({ x, y, z }).then((data) => {
       dataChunks.set(key, data);
-      loading.set(key, false);
+      loading.delete(key);
       this.loadPendingNeighbors(x, y, z);
     });
   }
