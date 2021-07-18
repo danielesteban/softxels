@@ -5,9 +5,9 @@ let program;
 const onLoad = ({ data: { options: { chunkSize }, program: module } }) => {
   instantiate({
     memory: [
-      { id: 'bounds', type: Uint8Array, size: 6 },
       { id: 'chunks', type: Uint8Array, size: chunkSize * chunkSize * chunkSize * 4 * 8 },
-      { id: 'vertices', type: Uint8Array, size: chunkSize * chunkSize * chunkSize * 3 * 6 * 5 },
+      { id: 'vertices', type: Float32Array, size: chunkSize * chunkSize * chunkSize * 3 * 9 * 5 },
+      { id: 'bounds', type: Float32Array, size: 6 },
     ],
     program: module,
   })
@@ -31,9 +31,9 @@ const onData = ({ data: { chunks } }) => {
     offset += chunk.length;
   });
   const triangles = program.run(
-    program.memory.bounds.address,
     program.memory.chunks.address,
     program.memory.vertices.address,
+    program.memory.bounds.address,
     program.chunkSize
   );
   if (triangles === 0) {
@@ -41,6 +41,6 @@ const onData = ({ data: { chunks } }) => {
     return;    
   }
   const bounds = program.memory.bounds.view.slice(0);
-  const vertices = program.memory.vertices.view.slice(0, triangles * 3 * 6);
+  const vertices = program.memory.vertices.view.slice(0, triangles * 3 * 9);
   self.postMessage({ bounds, vertices }, [bounds.buffer, vertices.buffer]);
 };

@@ -17,11 +17,7 @@ class Chunk extends Mesh {
       const { uniforms, vertexShader, fragmentShader } = ShaderLib[shader];
       materials[shader] = new ShaderMaterial({
         uniforms: UniformsUtils.clone(uniforms),
-        vertexShader: vertexShader
-          .replace(
-            '#include <color_vertex>',
-            'vColor.xyz = color.xyz / 255.0;',
-          ),
+        vertexShader,
         fragmentShader,
         vertexColors: true,
         fog: true,
@@ -41,13 +37,11 @@ class Chunk extends Mesh {
     if (!Chunk.materials) {
       Chunk.setupMaterials();
     }
-    const buffer = new InterleavedBuffer(vertices, 6);
+    const buffer = new InterleavedBuffer(vertices, 9);
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new InterleavedBufferAttribute(buffer, 3, 0));
-    geometry.setAttribute('color', new InterleavedBufferAttribute(buffer, 3, 3));
-    if (shader !== 'basic') {
-      geometry.computeVertexNormals();
-    }
+    geometry.setAttribute('normal', new InterleavedBufferAttribute(buffer, 3, 3));
+    geometry.setAttribute('color', new InterleavedBufferAttribute(buffer, 3, 6));
     geometry.boundingBox = new Box3(
       new Vector3(bounds[0], bounds[1], bounds[2]),
       new Vector3(bounds[3], bounds[4], bounds[5])

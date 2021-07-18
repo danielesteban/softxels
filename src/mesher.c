@@ -17,31 +17,49 @@ typedef struct {
   const unsigned char y;
   const unsigned char z;
   const Voxel* voxel;
+} Cell;
+
+typedef struct {
+  float x;
+  float y;
+  float z;
+} Vector;
+
+typedef struct {
+  Vector position;
+  Vector color;
 } Point;
 
 typedef struct {
-  unsigned char x;
-  unsigned char y;
-  unsigned char z;
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
+  Vector position;
+  Vector normal;
+  Vector color;
 } Vertex;
 
 typedef struct {
-  struct {
-    unsigned char x;
-    unsigned char y;
-    unsigned char z;
-  } min;
-  struct {
-    unsigned char x;
-    unsigned char y;
-    unsigned char z;
-  } max;
+  Vector min;
+  Vector max;
 } Box;
 
-static const Point get(
+static void computeNormal(Vector* normal, Vector** triangle) {
+  const Vector cb = {
+    triangle[2]->x - triangle[1]->x,
+    triangle[2]->y - triangle[1]->y,
+    triangle[2]->z - triangle[1]->z
+  };
+  const Vector ab = {
+    triangle[0]->x - triangle[1]->x,
+    triangle[0]->y - triangle[1]->y,
+    triangle[0]->z - triangle[1]->z
+  };
+  const float ax = cb.x, ay = cb.y, az = cb.z;
+	const float bx = ab.x, by = ab.y, bz = ab.z;
+	normal->x = ay * bz - az * by;
+	normal->y = az * bx - ax * bz;
+	normal->z = ax * by - ay * bx;
+}
+
+static const Cell get(
   const Voxel* chunks,
   const unsigned char chunkSize,
   const unsigned char x,
@@ -67,40 +85,40 @@ static const Point get(
     voxelZ -= chunkSize;
   }
   const unsigned int offset = (chunkZ * 4 + chunkY * 2 + chunkX) * chunkSize * chunkSize * chunkSize;
-  const Point point = { x, y, z, &chunks[offset + voxelZ * chunkSize * chunkSize + voxelY * chunkSize + voxelX] };
-  return point;
+  const Cell cell = { x, y, z, &chunks[offset + voxelZ * chunkSize * chunkSize + voxelY * chunkSize + voxelX] };
+  return cell;
 }
 
 static void growBox(
   Box* box,
-  const Vertex* vertex
+  const Vector* point
 ) {
-  if (box->min.x > vertex->x) box->min.x = vertex->x;
-  if (box->min.y > vertex->y) box->min.y = vertex->y;
-  if (box->min.z > vertex->z) box->min.z = vertex->z;
-  if (box->max.x < vertex->x) box->max.x = vertex->x;
-  if (box->max.y < vertex->y) box->max.y = vertex->y;
-  if (box->max.z < vertex->z) box->max.z = vertex->z;
+  if (box->min.x > point->x) box->min.x = point->x;
+  if (box->min.y > point->y) box->min.y = point->y;
+  if (box->min.z > point->z) box->min.z = point->z;
+  if (box->max.x < point->x) box->max.x = point->x;
+  if (box->max.y < point->y) box->max.y = point->y;
+  if (box->max.z < point->z) box->max.z = point->z;
 }
 
 static void interpolate(
-  Vertex* vertex,
-  const Point* p1,
-  const Point* p2
+  Point* point,
+  const Cell* p1,
+  const Cell* p2
 ) {
   const float step = ((float) isolevel - (float) p1->voxel->value) / ((float) p2->voxel->value - (float) p1->voxel->value);
-  vertex->x = round((float) p1->x + step * ((float) p2->x - (float) p1->x));
-  vertex->y = round((float) p1->y + step * ((float) p2->y - (float) p1->y));
-  vertex->z = round((float) p1->z + step * ((float) p2->z - (float) p1->z));
-  vertex->r = round((float) p1->voxel->r + step * ((float) p2->voxel->r - (float) p1->voxel->r));
-  vertex->g = round((float) p1->voxel->g + step * ((float) p2->voxel->g - (float) p1->voxel->g));
-  vertex->b = round((float) p1->voxel->b + step * ((float) p2->voxel->b - (float) p1->voxel->b));
+  point->position.x = (float) p1->x + step * ((float) p2->x - (float) p1->x);
+  point->position.y = (float) p1->y + step * ((float) p2->y - (float) p1->y);
+  point->position.z = (float) p1->z + step * ((float) p2->z - (float) p1->z);
+  point->color.x = ((float) p1->voxel->r + step * ((float) p2->voxel->r - (float) p1->voxel->r)) / 255.0;
+  point->color.y = ((float) p1->voxel->g + step * ((float) p2->voxel->g - (float) p1->voxel->g)) / 255.0;
+  point->color.z = ((float) p1->voxel->b + step * ((float) p2->voxel->b - (float) p1->voxel->b)) / 255.0;
 }
 
 const unsigned int run(
-  Box* bounds,
   const Voxel* chunks,
   Vertex* vertices,
+  Box* bounds,
   const unsigned char chunkSize
 ) {
   bounds->min.x = bounds->min.y = bounds->min.z = chunkSize;
@@ -111,7 +129,7 @@ const unsigned int run(
     for (unsigned char y = 0; y < chunkSize; y++) {
       for (unsigned char x = 0; x < chunkSize; x++) {
         int cubeindex = 0;
-        const Point points[8] = {
+        const Cell cells[8] = {
           get(chunks, chunkSize, x, y, z),
           get(chunks, chunkSize, x, y + 1, z),
           get(chunks, chunkSize, x + 1, y + 1, z),
@@ -121,50 +139,59 @@ const unsigned int run(
           get(chunks, chunkSize, x + 1, y + 1, z + 1),
           get(chunks, chunkSize, x + 1, y, z + 1)
         };
-        if (points[0].voxel->value <= isolevel) cubeindex |= 1;
-        if (points[1].voxel->value <= isolevel) cubeindex |= 2;
-        if (points[2].voxel->value <= isolevel) cubeindex |= 4;
-        if (points[3].voxel->value <= isolevel) cubeindex |= 8;
-        if (points[4].voxel->value <= isolevel) cubeindex |= 16;
-        if (points[5].voxel->value <= isolevel) cubeindex |= 32;
-        if (points[6].voxel->value <= isolevel) cubeindex |= 64;
-        if (points[7].voxel->value <= isolevel) cubeindex |= 128;
+        if (cells[0].voxel->value <= isolevel) cubeindex |= 1;
+        if (cells[1].voxel->value <= isolevel) cubeindex |= 2;
+        if (cells[2].voxel->value <= isolevel) cubeindex |= 4;
+        if (cells[3].voxel->value <= isolevel) cubeindex |= 8;
+        if (cells[4].voxel->value <= isolevel) cubeindex |= 16;
+        if (cells[5].voxel->value <= isolevel) cubeindex |= 32;
+        if (cells[6].voxel->value <= isolevel) cubeindex |= 64;
+        if (cells[7].voxel->value <= isolevel) cubeindex |= 128;
 
         if (edgeTable[cubeindex] == 0) {
           continue;
         }
 
-        Vertex vertlist[12];
+        Point points[12];
         if (edgeTable[cubeindex] & 1)
-          interpolate(&vertlist[0], &points[0], &points[1]);
+          interpolate(&points[0], &cells[0], &cells[1]);
         if (edgeTable[cubeindex] & 2)
-          interpolate(&vertlist[1], &points[1], &points[2]);
+          interpolate(&points[1], &cells[1], &cells[2]);
         if (edgeTable[cubeindex] & 4)
-          interpolate(&vertlist[2], &points[2], &points[3]);
+          interpolate(&points[2], &cells[2], &cells[3]);
         if (edgeTable[cubeindex] & 8)
-          interpolate(&vertlist[3], &points[3], &points[0]);
+          interpolate(&points[3], &cells[3], &cells[0]);
         if (edgeTable[cubeindex] & 16)
-          interpolate(&vertlist[4], &points[4], &points[5]);
+          interpolate(&points[4], &cells[4], &cells[5]);
         if (edgeTable[cubeindex] & 32)
-          interpolate(&vertlist[5], &points[5], &points[6]);
+          interpolate(&points[5], &cells[5], &cells[6]);
         if (edgeTable[cubeindex] & 64)
-          interpolate(&vertlist[6], &points[6], &points[7]);
+          interpolate(&points[6], &cells[6], &cells[7]);
         if (edgeTable[cubeindex] & 128)
-          interpolate(&vertlist[7], &points[7], &points[4]);
+          interpolate(&points[7], &cells[7], &cells[4]);
         if (edgeTable[cubeindex] & 256)
-          interpolate(&vertlist[8], &points[0], &points[4]);
+          interpolate(&points[8], &cells[0], &cells[4]);
         if (edgeTable[cubeindex] & 512)
-          interpolate(&vertlist[9], &points[1], &points[5]);
+          interpolate(&points[9], &cells[1], &cells[5]);
         if (edgeTable[cubeindex] & 1024)
-          interpolate(&vertlist[10], &points[2], &points[6]);
+          interpolate(&points[10], &cells[2], &cells[6]);
         if (edgeTable[cubeindex] & 2048)
-          interpolate(&vertlist[11], &points[3], &points[7]);
+          interpolate(&points[11], &cells[3], &cells[7]);
 
+        Vector* triangle[3];
+        Vector normal;
         for (int i = 0; triTable[cubeindex][i] != -1; i += 3) {
           for (int v = 0; v < 3; v += 1) {
-            const Vertex* vertex = &vertlist[triTable[cubeindex][i + v]];
-            vertices[offset++] = *vertex;
-            growBox(bounds, vertex);
+            triangle[v] = &points[triTable[cubeindex][i + v]].position;
+            growBox(bounds, triangle[v]);
+          }
+          computeNormal(&normal, triangle);
+          for (int v = 0; v < 3; v += 1) {
+            const Point* point = &points[triTable[cubeindex][i + v]];
+            Vertex* vertex = &vertices[offset++];
+            vertex->position = point->position;
+            vertex->normal = normal;
+            vertex->color = point->color;
           }
           triangles++;
         }
