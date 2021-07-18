@@ -7,7 +7,6 @@ import livereload from 'rollup-plugin-livereload';
 import resolve from '@rollup/plugin-node-resolve';
 import serve from 'rollup-plugin-serve';
 import { terser } from 'rollup-plugin-terser';
-import { watchExternal } from 'rollup-plugin-watch-external';
 
 const outputPath = path.resolve(__dirname, 'dist');
 
@@ -41,7 +40,6 @@ export default {
         port: 8080,
       }),
       livereload(outputPath),
-      watchExternal({ entries: ['../src/*.wasm', 'index.*'] }),
     ] : [
       terser(),
       {
