@@ -62,7 +62,7 @@ class Main extends Scene {
         const affected = world.updateVolume(
           hit.point,
           1,
-          player.buttons.primaryDown ? 0xFF : 0
+          player.buttons.primaryDown ? 0 : 0xFF
         );
         if (affected && sfx) {
           const audio = sfx.find(({ isPlaying }) => (!isPlaying));

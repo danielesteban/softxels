@@ -108,13 +108,13 @@ static void interpolate(
   const Cell* p1,
   const Cell* p2
 ) {
-  const float step = ((float) isolevel - (float) p1->voxel->value) / ((float) p2->voxel->value - (float) p1->voxel->value);
-  point->position.x = (float) p1->x + step * ((float) p2->x - (float) p1->x);
-  point->position.y = (float) p1->y + step * ((float) p2->y - (float) p1->y);
-  point->position.z = (float) p1->z + step * ((float) p2->z - (float) p1->z);
-  point->color.x = ((float) p1->voxel->r + step * ((float) p2->voxel->r - (float) p1->voxel->r)) / 255.0;
-  point->color.y = ((float) p1->voxel->g + step * ((float) p2->voxel->g - (float) p1->voxel->g)) / 255.0;
-  point->color.z = ((float) p1->voxel->b + step * ((float) p2->voxel->b - (float) p1->voxel->b)) / 255.0;
+  const float step = ((float) isolevel - p1->voxel->value) / ((float) p2->voxel->value - p1->voxel->value);
+  point->position.x = (float) p1->x + step * ((float) p2->x - p1->x);
+  point->position.y = (float) p1->y + step * ((float) p2->y - p1->y);
+  point->position.z = (float) p1->z + step * ((float) p2->z - p1->z);
+  point->color.x = ((float) p1->voxel->r + step * ((float) p2->voxel->r - p1->voxel->r)) / 255.0;
+  point->color.y = ((float) p1->voxel->g + step * ((float) p2->voxel->g - p1->voxel->g)) / 255.0;
+  point->color.z = ((float) p1->voxel->b + step * ((float) p2->voxel->b - p1->voxel->b)) / 255.0;
 }
 
 const unsigned int run(
@@ -141,14 +141,14 @@ const unsigned int run(
           get(chunks, chunkSize, x + 1, y + 1, z + 1),
           get(chunks, chunkSize, x + 1, y, z + 1)
         };
-        if (cells[0].voxel->value <= isolevel) cubeindex |= 1;
-        if (cells[1].voxel->value <= isolevel) cubeindex |= 2;
-        if (cells[2].voxel->value <= isolevel) cubeindex |= 4;
-        if (cells[3].voxel->value <= isolevel) cubeindex |= 8;
-        if (cells[4].voxel->value <= isolevel) cubeindex |= 16;
-        if (cells[5].voxel->value <= isolevel) cubeindex |= 32;
-        if (cells[6].voxel->value <= isolevel) cubeindex |= 64;
-        if (cells[7].voxel->value <= isolevel) cubeindex |= 128;
+        if (cells[0].voxel->value >= isolevel) cubeindex |= 1;
+        if (cells[1].voxel->value >= isolevel) cubeindex |= 2;
+        if (cells[2].voxel->value >= isolevel) cubeindex |= 4;
+        if (cells[3].voxel->value >= isolevel) cubeindex |= 8;
+        if (cells[4].voxel->value >= isolevel) cubeindex |= 16;
+        if (cells[5].voxel->value >= isolevel) cubeindex |= 32;
+        if (cells[6].voxel->value >= isolevel) cubeindex |= 64;
+        if (cells[7].voxel->value >= isolevel) cubeindex |= 128;
 
         if (edgeTable[cubeindex] == 0) {
           continue;

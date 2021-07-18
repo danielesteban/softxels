@@ -22,10 +22,7 @@ const camera = new PerspectiveCamera(70, aspect, 0.1, 1000);
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-const world = new World({
-  renderRadius: 5,
-  seed: Math.floor(Math.random() * 2147483647),
-});
+const world = new World();
 scene.add(world);
 
 renderer.setAnimationLoop(() => {
