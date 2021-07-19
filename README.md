@@ -4,6 +4,16 @@
 
 [![screenshot](https://github.com/danielesteban/softxels/raw/master/example/screenshot.png)](https://softxels.gatunes.com/)
 
+### Examples
+
+* Editable world:
+  * Demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+  * Source: [example/main.js](example/main.js)
+
+* Random walkers:
+  * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
+  * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
+
 ### Installation
 
 ```bash
@@ -30,16 +40,6 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 ```
-
-### Examples
-
-* Editable world:
-  * Demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
-  * Source: [example/main.js](example/main.js)
-
-* Random walkers:
-  * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
-  * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
 
 ### Constructor
 ```js
