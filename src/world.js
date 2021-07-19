@@ -177,7 +177,7 @@ class World extends Group {
   }
 
   updateChunks(anchor) {
-    const { aux: { chunk, origin }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
+    const { aux: { chunk }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(chunk.copy(anchor)).divideScalar(chunkSize).floor();
     if (anchorChunk.equals(chunk)) {
       return;
@@ -194,10 +194,10 @@ class World extends Group {
       }
     });
     renderGrid.forEach((offset) => {
-      origin.copy(chunk).add(offset);
-      const key = `${origin.x}:${origin.y}:${origin.z}`;
+      chunk.copy(anchorChunk).add(offset);
+      const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
       if (!renderChunks.has(key)) {
-        this.loadChunk(origin.x, origin.y, origin.z);
+        this.loadChunk(chunk.x, chunk.y, chunk.z);
       }
     });
   }
