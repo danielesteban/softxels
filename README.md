@@ -16,12 +16,12 @@ npm install softxels
 import World from 'softxels';
 import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 
-const scene = new Scene();
 const aspect = window.innerWidth / window.innerHeight;
 const camera = new PerspectiveCamera(70, aspect, 0.1, 1000);
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+const scene = new Scene();
 const world = new World();
 scene.add(world);
 
@@ -31,10 +31,41 @@ renderer.setAnimationLoop(() => {
 });
 ```
 
-### Full example
+### Examples
 
- * Source: [example/main.js](example/main.js)
- * Live demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+* Editable world:
+  * Demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+  * Source: [example/main.js](example/main.js)
+
+* Random walkers:
+  * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
+  * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
+
+### Constructor
+```js
+new World({
+  chunkMaterial: MeshBasicMaterial({ // A ThreeJS Material instance to render all chunks (default: null)
+    vertexColors: true,
+  }),
+  chunkSize: 32, // An uInt8 that controls the data/render chunks size (default: 32)
+  renderRadius: 5, // Controls the chunk radius updateChunks loads around the anchor (default: 5)
+  seed: 1337, // A uInt32 seed to drive the world generation noise (default: Random)
+  worldgen: 'default', // 'default' or 'empty'
+});
+```
+
+### updateVolume
+```js
+world.updateVolume(
+  new Vector3(1, 2, 3), // A point in worldspace
+  2, // A uInt8 radius to update around the point
+  0xFF, // A uint8 scalar where: 
+        // 0 === OUTSIDE
+        // 0X80 === AT ISOSURFACE
+        // 0xFF === INSIDE
+  { r: 0x11, g: 0x22, b: 0x33 } // An optional 24bit RGB color
+);
+```
 
 ### Modifying the WASM programs
 
