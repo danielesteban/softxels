@@ -1,5 +1,5 @@
 #define FNL_IMPL
-#include "../vendor/FastNoiseLite/C/FastNoiseLite.h"
+#include "../../vendor/FastNoiseLite/C/FastNoiseLite.h"
 
 fnl_state noise;
 
