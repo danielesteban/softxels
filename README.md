@@ -41,7 +41,7 @@ renderer.setAnimationLoop(() => {
 });
 ```
 
-### Constructor
+### World constructor
 ```js
 new World({
   chunkMaterial: MeshBasicMaterial({ // A ThreeJS Material instance to render all chunks (default: null)
@@ -54,12 +54,24 @@ new World({
 });
 ```
 
+### updateChunks
+```js
+// This will load all the chunks around the anchor in the selected
+// renderRadius passed to the constructor.
+// It will also unload all the render chunks further away (renderRadius * 1.25).
+// You should call this everytime you move the anchor.
+// It does remember the last chunk the anchor was in, so... It will only
+// update when the anchor crosses a chunk boundary.
+const anchor = new Vector3(1, 2, 3);
+world.updateChunks(anchor);
+```
+
 ### updateVolume
 ```js
 world.updateVolume(
   new Vector3(1, 2, 3), // A point in worldspace
   2, // A uInt8 radius to update around the point
-  0xFF, // A uint8 scalar where: 
+  0xFF, // A uInt8 scalar where: 
         // 0 === OUTSIDE
         // 0X80 === AT ISOSURFACE
         // 0xFF === INSIDE
