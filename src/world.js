@@ -1,11 +1,11 @@
 import { Group, Vector3 } from 'three';
 import Chunk from './chunk.js';
-import Worker from './worker.js';
-import { setImmediate } from './setimmediate.js';
-import MesherProgram from './mesher.wasm';
-import MesherWorker from 'web-worker:./mesher.js';
-import WorldGenProgram from './worldgen.wasm';
-import WorldGenWorker from 'web-worker:./worldgen.js';
+import Worker from './core/worker.js';
+import { setImmediate } from './core/setimmediate.js';
+import MesherProgram from './programs/mesher.wasm';
+import MesherWorker from 'web-worker:./workers/mesher.js';
+import WorldGenProgram from './programs/worldgen.wasm';
+import WorldGenWorker from 'web-worker:./workers/worldgen.js';
 
 class World extends Group {
   constructor({

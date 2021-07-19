@@ -6,22 +6,22 @@
     "compile:mesher": {
       "extensions": "c",
       "patterns": [
-        "src/mesher.c"
+        "src/programs/mesher.c"
       ],
       "runOnChangeOnly": true
     },
     "compile:worldgen": {
       "extensions": "c",
       "patterns": [
-        "src/worldgen.c"
+        "src/programs/worldgen.c"
       ],
       "runOnChangeOnly": true
     }
   },
   "scripts": {
     "build": "rollup -c rollup.config.js",
-    "compile:mesher": "sh src/compile.sh mesher",
-    "compile:worldgen": "sh src/compile.sh worldgen",
+    "compile:mesher": "sh src/programs/compile.sh mesher",
+    "compile:worldgen": "sh src/programs/compile.sh worldgen",
     "watch:build": "npm run build -- -w",
     "watch:mesher": "npm-watch compile:mesher",
     "watch:worldgen": "npm-watch compile:worldgen",

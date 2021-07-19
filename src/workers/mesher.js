@@ -1,4 +1,4 @@
-import instantiate from './program.js';
+import instantiate from '../core/program.js';
 
 let program;
 

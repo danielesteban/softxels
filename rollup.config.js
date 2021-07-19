@@ -9,6 +9,7 @@ const outputPath = path.resolve(__dirname, 'dist');
 
 export default {
   input: path.join(__dirname, 'src', 'world.js'),
+  external: ['three'],
   output: {
     file: path.join(outputPath, 'softxels.js'),
     format: 'esm',
@@ -49,6 +50,5 @@ export default {
     },
     ...(!process.env.ROLLUP_WATCH ? [terser()] : []),
   ],
-  external: ['three'],
   watch: { clearScreen: false },
 };
