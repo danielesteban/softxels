@@ -2,7 +2,7 @@
 [![npm-version](https://img.shields.io/npm/v/softxels.svg)](https://www.npmjs.com/package/softxels)
 ==
 
-[![screenshot](https://github.com/danielesteban/softxels/raw/master/example/screenshot.png)](https://softxels.gatunes.com/)
+[![screenshot](example/screenshot.png)](https://softxels.gatunes.com/)
 
 ### Examples
 
