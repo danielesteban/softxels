@@ -113,7 +113,15 @@ class World extends Group {
         return;
       }
       workers.mesher.run({ chunks: neighbors }).then((geometry) => {
-        if (!geometry || request.abort) {
+        if (request.abort) {
+          return;
+        }
+        if (renderChunks.has(key)) {
+          const current = renderChunks.get(key);
+          current.dispose();
+          this.remove(current);
+        }
+        if (!geometry) {
           return;
         }
         loading.mesh.delete(key);
@@ -125,12 +133,7 @@ class World extends Group {
           position: { x, y, z },
           vertices,
         });
-        this.add(chunk);
-        if (renderChunks.has(key)) {
-          const current = renderChunks.get(key);
-          current.dispose();
-          this.remove(current);
-        }
+        this.add(chunk);        
         renderChunks.set(key, chunk);
       });
     });
