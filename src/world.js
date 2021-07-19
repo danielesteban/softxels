@@ -177,7 +177,7 @@ class World extends Group {
   }
 
   updateChunks(anchor) {
-    const { aux: { chunk, origin }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius, loading } = this;
+    const { aux: { chunk, origin }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(chunk.copy(anchor)).divideScalar(chunkSize).floor();
     if (anchorChunk.equals(chunk)) {
       return;
@@ -196,7 +196,7 @@ class World extends Group {
     renderGrid.forEach((offset) => {
       origin.copy(chunk).add(offset);
       const key = `${origin.x}:${origin.y}:${origin.z}`;
-      if (!renderChunks.has(key) && !loading.neighbors.has(key)) {
+      if (!renderChunks.has(key)) {
         this.loadChunk(origin.x, origin.y, origin.z);
       }
     });
