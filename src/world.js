@@ -20,6 +20,7 @@ class World extends Group {
     this.chunkSize = chunkSize;
     this.aux = {
       chunk: new Vector3(),
+      origin: new Vector3(),
       voxel: new Vector3(),
     };
     this.anchorChunk = new Vector3(Infinity, Infinity, Infinity);
@@ -173,11 +174,11 @@ class World extends Group {
   }
 
   updateVolume(point, radius, value, color) {
-    const { aux: { chunk, voxel }, chunkSize, dataChunks, renderChunks, loading: { mesh: loading } } = this;
-    this.worldToLocal(point).floor();
+    const { aux: { chunk, origin, voxel }, chunkSize, dataChunks, renderChunks, loading: { mesh: loading } } = this;
+    this.worldToLocal(origin.copy(point)).floor();
     const affected = new Map();
     World.getBrush(radius).forEach((offset) => {
-      voxel.copy(point).add(offset);
+      voxel.copy(origin).add(offset);
       chunk.copy(voxel).divideScalar(chunkSize).floor();
       voxel.addScaledVector(chunk, -chunkSize).floor();
       const key = `${chunk.x}:${chunk.y}:${chunk.z}`;

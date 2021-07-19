@@ -3,7 +3,7 @@
 let currentlyRunningATask = false;
 let nextHandle = 1; // Spec says greater than zero
 const messagePrefix = "setImmediate$" + Math.random() + "$";
-const tasksByHandle = {};
+const tasksByHandle = new Map();
 
 function setImmediate(callback) {
   // Callback can either be a function or a string
@@ -17,13 +17,13 @@ function setImmediate(callback) {
   }
   // Store and register the task
   const task = { callback: callback, args: args };
-  tasksByHandle[nextHandle] = task;
+  tasksByHandle.set(nextHandle, task);
   window.postMessage(messagePrefix + nextHandle, "*");
   return nextHandle++;
 }
 
 function clearImmediate(handle) {
-  delete tasksByHandle[handle];
+  tasksByHandle.delete(handle);
 }
 
 function run(task) {
@@ -56,7 +56,7 @@ function runIfPresent(handle) {
     // "too much recursion" error.
     setTimeout(runIfPresent, 0, handle);
   } else {
-    const task = tasksByHandle[handle];
+    const task = tasksByHandle.get(handle);
     if (task) {
       currentlyRunningATask = true;
       try {
