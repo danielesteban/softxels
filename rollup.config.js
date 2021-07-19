@@ -14,19 +14,19 @@ export default {
     format: 'esm',
   },
   plugins: [
-    wasm({
-      maxFileSize: Infinity,
-    }),
-    webWorkerLoader({
-      forceInline: true,
-      skipPlugins: ['copy'],
-    }),
     copy({
       targets: [
         { src: 'LICENSE', dest: 'dist' },
         { src: 'README.md', dest: 'dist' },
       ],
       copyOnce: !process.env.ROLLUP_WATCH,
+    }),
+    wasm({
+      maxFileSize: Infinity,
+    }),
+    webWorkerLoader({
+      forceInline: true,
+      skipPlugins: ['copy', 'wasm'],
     }),
     {
       writeBundle() {
@@ -47,9 +47,7 @@ export default {
         }, null, '  '));
       },
     },
-    ...(!process.env.ROLLUP_WATCH ? [
-      terser(),
-    ] : []),
+    ...(!process.env.ROLLUP_WATCH ? [terser()] : []),
   ],
   external: ['three'],
   watch: { clearScreen: false },
