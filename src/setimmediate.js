@@ -6,18 +6,7 @@ const messagePrefix = "setImmediate$" + Math.random() + "$";
 const tasksByHandle = new Map();
 
 function setImmediate(callback) {
-  // Callback can either be a function or a string
-  if (typeof callback !== "function") {
-    callback = new Function("" + callback);
-  }
-  // Copy function arguments
-  const args = new Array(arguments.length - 1);
-  for (let i = 0; i < args.length; i++) {
-    args[i] = arguments[i + 1];
-  }
-  // Store and register the task
-  const task = { callback: callback, args: args };
-  tasksByHandle.set(nextHandle, task);
+  tasksByHandle.set(nextHandle, callback);
   window.postMessage(messagePrefix + nextHandle, "*");
   return nextHandle++;
 }
@@ -60,7 +49,7 @@ function runIfPresent(handle) {
     if (task) {
       currentlyRunningATask = true;
       try {
-        run(task);
+        task();
       } finally {
         clearImmediate(handle);
         currentlyRunningATask = false;
