@@ -61,6 +61,26 @@ class World extends Group {
     });
   }
 
+  reset() {
+    const { anchorChunk, dataChunks, renderChunks, loading } = this;
+    anchorChunk.set(Infinity, Infinity, Infinity);
+    dataChunks.clear();
+    renderChunks.forEach((mesh) => {
+      mesh.dispose();
+      this.remove(mesh);
+    });
+    renderChunks.clear();
+    loading.data.forEach((request) => {
+      request.abort = true;
+    });
+    loading.data.clear();
+    loading.neighbors.clear();
+    loading.mesh.forEach((request) => {
+      request.abort = true;
+    });
+    loading.mesh.clear();
+  }
+
   generateChunk(x, y, z) {
     const { chunkSize, dataChunks, loading: { data: loading }, workers } = this;
     const key = `${x}:${y}:${z}`;
@@ -72,10 +92,14 @@ class World extends Group {
       this.loadPendingNeighbors(x, y, z);
       return;
     }
-    loading.set(key, true);
+    const request = { abort: false };
+    loading.set(key, request);
     workers.worldgen.run({ x, y, z }).then((data) => {
-      dataChunks.set(key, data);
+      if (request.abort) {
+        return;
+      }
       loading.delete(key);
+      dataChunks.set(key, data);
       this.loadPendingNeighbors(x, y, z);
     });
   }
