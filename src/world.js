@@ -61,7 +61,7 @@ class World extends Group {
 
   generateChunk(x, y, z) {
     const { chunkSize, dataChunks, loading: { data: loading }, workers } = this;
-    const key = `${z}:${y}:${x}`;
+    const key = `${x}:${y}:${z}`;
     if (loading.has(key)) {
       return;
     }
@@ -80,8 +80,8 @@ class World extends Group {
 
   loadChunk(x, y, z) {
     const { chunkMaterial, chunkSize, dataChunks, renderChunks, loading, workers } = this;
-    const key = `${z}:${y}:${x}`;
-    if (renderChunks.has(key) || loading.mesh.has(key)) {
+    const key = `${x}:${y}:${z}`;
+    if (loading.mesh.has(key)) {
       return;
     }
     let needsData = false;
@@ -89,7 +89,7 @@ class World extends Group {
     for (let nz = z; nz <= z + 1; nz++) {
       for (let ny = y; ny <= y + 1; ny++) {
         for (let nx = x; nx <= x + 1; nx++) {
-          const nkey = `${nz}:${ny}:${nx}`;
+          const nkey = `${nx}:${ny}:${nz}`;
           if (!dataChunks.has(nkey)) {
             this.generateChunk(nx, ny, nz);
             needsData = true;
@@ -120,6 +120,11 @@ class World extends Group {
         vertices,
       });
       this.add(chunk);
+      if (renderChunks.has(key)) {
+        const current = renderChunks.get(key);
+        current.dispose();
+        this.remove(current);
+      }
       renderChunks.set(key, chunk);
     });
   }
@@ -129,7 +134,7 @@ class World extends Group {
     for (let nz = z - 1; nz <= z + 1; nz++) {
       for (let ny = y - 1; ny <= y + 1; ny++) {
         for (let nx = x - 1; nx <= x + 1; nx++) {
-          if (neighbors.has(`${nz}:${ny}:${nx}`)) {
+          if (neighbors.has(`${nx}:${ny}:${nz}`)) {
             this.loadChunk(nx, ny, nz);
           }
         }
@@ -155,7 +160,9 @@ class World extends Group {
       }
     });
     renderGrid.forEach(({ x, y, z }) => {
-      this.loadChunk(chunk.x + x, chunk.y + y, chunk.z + z);
+      if (!renderChunks.has(`${x}:${y}:${z}`)) {
+        this.loadChunk(chunk.x + x, chunk.y + y, chunk.z + z);
+      }
     });
   }
 
@@ -167,7 +174,7 @@ class World extends Group {
       voxel.copy(point).add(offset);
       chunk.copy(voxel).divideScalar(chunkSize).floor();
       voxel.addScaledVector(chunk, -chunkSize).floor();
-      const key = `${chunk.z}:${chunk.y}:${chunk.x}`;
+      const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
       const data = dataChunks.get(key);
       if (data) {
         const index = (
@@ -179,43 +186,35 @@ class World extends Group {
         }
         affected.set(key, true);
         if (voxel.x === 0) {
-          affected.set(`${chunk.z}:${chunk.y}:${chunk.x - 1}`, true);
+          affected.set(`${chunk.x - 1}:${chunk.y}:${chunk.z}`, true);
         }
         if (voxel.y === 0) {
-          affected.set(`${chunk.z}:${chunk.y - 1}:${chunk.x}`, true);
+          affected.set(`${chunk.x}:${chunk.y - 1}:${chunk.z}`, true);
         }
         if (voxel.z === 0) {
-          affected.set(`${chunk.z - 1}:${chunk.y}:${chunk.x}`, true);
+          affected.set(`${chunk.x}:${chunk.y}:${chunk.z - 1}`, true);
         }
         if (voxel.x === 0 && voxel.y === 0 && voxel.z === 0) {
-          affected.set(`${chunk.z - 1}:${chunk.y - 1}:${chunk.x - 1}`, true);
+          affected.set(`${chunk.x - 1}:${chunk.y - 1}:${chunk.z - 1}`, true);
         }
         if (voxel.x === 0 && voxel.y === 0) {
-          affected.set(`${chunk.z}:${chunk.y - 1}:${chunk.x - 1}`, true);
+          affected.set(`${chunk.x - 1}:${chunk.y - 1}:${chunk.z}`, true);
         }
         if (voxel.y === 0 && voxel.z === 0) {
-          affected.set(`${chunk.z - 1}:${chunk.y - 1}:${chunk.x}`, true);
+          affected.set(`${chunk.x}:${chunk.y - 1}:${chunk.z - 1}`, true);
         }
         if (voxel.x === 0 && voxel.z === 0) {
-          affected.set(`${chunk.z - 1}:${chunk.y}:${chunk.x - 1}`, true);
+          affected.set(`${chunk.x - 1}:${chunk.y}:${chunk.z - 1}`, true);
         }
       }
     });
     affected.forEach((v, key) => {
-      const mesh = renderChunks.get(key);
-      renderChunks.delete(key);
       if (loading.has(key)) {
         loading.get(key).abort = true;
         loading.delete(key);
       }
-      const [z, y, x] = key.split(':');
-      this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10))
-        .then(() => {
-          if (mesh) {
-            mesh.dispose();
-            this.remove(mesh);
-          }
-        });
+      const [x, y, z] = key.split(':');
+      this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
     });
     return affected.size;
   }
