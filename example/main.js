@@ -6,6 +6,7 @@ import {
   PositionalAudio,
   SpotLight,
   Scene,
+  Vector3,
 } from 'three';
 import World from 'softxels';
 import Player from './core/player.js';
@@ -43,14 +44,45 @@ class Main extends Scene {
     this.world = new World({
       chunkMaterial: new MeshPhongMaterial({ vertexColors: true }),
       chunkSize,
+      worldgen: 'empty',
     });
     this.add(this.world);
+
+    this.world.updateChunks(new Vector3(0, 0, 0));
+    this.cursors = [...Array(6)].map((v, i) => {
+      const cursor = (new Vector3(Math.random(), Math.random(), Math.random())).multiplyScalar(48)
+      cursor.direction = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+      cursor.color = {
+        r: Math.floor(Math.random() * 255),
+        g: Math.floor(Math.random() * 255),
+        b: Math.floor(Math.random() * 255),
+      };
+      return cursor;
+    });
   }
 
   onAnimationTick(animation) {
     const { player, sfx, world } = this;
     player.onAnimationTick(animation);
-    world.updateChunks(player.position);
+    // world.updateChunks(player.position);
+
+    const aux = new Vector3();
+    this.cursors.forEach((cursor) => {
+      aux.copy(cursor).floor();
+      world.updateVolume(aux, 2, Math.floor(128 + Math.random() * 128), cursor.color);
+      cursor.direction.add({
+        x: (Math.random() - 0.5),
+        y: (Math.random() - 0.5),
+        z: (Math.random() - 0.5),
+      }).normalize();
+      cursor.addScaledVector(cursor.direction, 0.5);
+      if (cursor.x < -32) cursor.x = -32;
+      if (cursor.x >= 64) cursor.x = 64;
+      if (cursor.y < -32) cursor.y = -32;
+      if (cursor.y >= 64) cursor.y = 63;
+      if (cursor.z < -32) cursor.z = -32;
+      if (cursor.z >= 64) cursor.z = 64;
+    })
 
     if (
       player.buttons.primaryDown

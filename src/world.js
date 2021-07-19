@@ -1,10 +1,11 @@
 import { Group, Vector3 } from 'three';
 import Chunk from './chunk.js';
+import Worker from './worker.js';
+import setImmediate from './setimmediate.js';
 import MesherProgram from './mesher.wasm';
 import MesherWorker from 'web-worker:./mesher.js';
 import WorldGenProgram from './worldgen.wasm';
 import WorldGenWorker from 'web-worker:./worldgen.js';
-import Worker from './worker.js';
 
 class World extends Group {
   constructor({
@@ -106,26 +107,31 @@ class World extends Group {
     loading.neighbors.delete(key);
     const request = { abort: false };
     loading.mesh.set(key, request);
-    return workers.mesher.run({ chunks: neighbors }).then((geometry) => {
-      if (!geometry || request.abort) {
+    setImmediate(() => {
+      if (request.abort) {
         return;
       }
-      loading.mesh.delete(key);
-      const { bounds, vertices } = geometry;
-      const chunk = new Chunk({
-        bounds,
-        chunkMaterial,
-        chunkSize,
-        position: { x, y, z },
-        vertices,
+      workers.mesher.run({ chunks: neighbors }).then((geometry) => {
+        if (!geometry || request.abort) {
+          return;
+        }
+        loading.mesh.delete(key);
+        const { bounds, vertices } = geometry;
+        const chunk = new Chunk({
+          bounds,
+          chunkMaterial,
+          chunkSize,
+          position: { x, y, z },
+          vertices,
+        });
+        this.add(chunk);
+        if (renderChunks.has(key)) {
+          const current = renderChunks.get(key);
+          current.dispose();
+          this.remove(current);
+        }
+        renderChunks.set(key, chunk);
       });
-      this.add(chunk);
-      if (renderChunks.has(key)) {
-        const current = renderChunks.get(key);
-        current.dispose();
-        this.remove(current);
-      }
-      renderChunks.set(key, chunk);
     });
   }
 
