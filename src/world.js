@@ -194,7 +194,7 @@ class World extends Group {
       }
     });
     renderGrid.forEach((offset) => {
-      chunk.copy(anchorChunk).add(offset);
+      chunk.addVectors(anchorChunk, offset);
       const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
       if (!renderChunks.has(key)) {
         this.loadChunk(chunk.x, chunk.y, chunk.z);
@@ -203,11 +203,11 @@ class World extends Group {
   }
 
   updateVolume(point, radius, value, color) {
-    const { aux: { chunk, origin, voxel }, chunkSize, dataChunks, renderChunks, loading: { mesh: loading } } = this;
+    const { aux: { chunk, origin, voxel }, chunkSize, dataChunks, loading: { mesh: loading } } = this;
     this.worldToLocal(origin.copy(point)).floor();
     const affected = new Map();
     World.getBrush(radius).forEach((offset) => {
-      voxel.copy(origin).add(offset);
+      voxel.addVectors(origin, offset);
       chunk.copy(voxel).divideScalar(chunkSize).floor();
       voxel.addScaledVector(chunk, -chunkSize).floor();
       const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
