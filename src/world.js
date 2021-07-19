@@ -140,25 +140,27 @@ class World extends Group {
         if (request.abort) {
           return;
         }
-        if (renderChunks.has(key)) {
-          const current = renderChunks.get(key);
-          current.dispose();
-          this.remove(current);
-        }
+        const current = renderChunks.get(key);
         if (!geometry) {
+          if (current) {
+            current.dispose();
+            this.remove(current);
+          }
           return;
         }
         loading.mesh.delete(key);
-        const { bounds, vertices } = geometry;
-        const chunk = new Chunk({
-          bounds,
-          chunkMaterial,
-          chunkSize,
-          position: { x, y, z },
-          vertices,
-        });
-        this.add(chunk);        
-        renderChunks.set(key, chunk);
+        if (current) {
+          current.update(geometry);
+        } else {
+          const chunk = new Chunk({
+            chunkMaterial,
+            chunkSize,
+            geometry,
+            position: { x, y, z },
+          });
+          this.add(chunk);
+          renderChunks.set(key, chunk);
+        }        
       });
     });
   }
