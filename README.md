@@ -56,8 +56,8 @@ new World({
 
 ### updateChunks
 ```js
-// This will load all the chunks around the anchor in the selected
-// renderRadius passed to the constructor.
+// This will load all the chunks around the anchor in the selected renderRadius
+// passed to the constructor.
 // It will also unload all the render chunks further away (renderRadius * 1.25).
 // You should call this everytime you move the anchor.
 // It does remember the last chunk the anchor was in, so... It will only
