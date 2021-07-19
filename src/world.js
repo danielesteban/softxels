@@ -1,7 +1,7 @@
 import { Group, Vector3 } from 'three';
 import Chunk from './chunk.js';
 import Worker from './worker.js';
-import setImmediate from './setimmediate.js';
+import { setImmediate } from './setimmediate.js';
 import MesherProgram from './mesher.wasm';
 import MesherWorker from 'web-worker:./mesher.js';
 import WorldGenProgram from './worldgen.wasm';

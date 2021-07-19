@@ -1,40 +1,20 @@
+// A minimal version of:
 // https://github.com/YuzuJS/setImmediate/blob/master/setImmediate.js
 
 let currentlyRunningATask = false;
 let nextHandle = 1; // Spec says greater than zero
 const messagePrefix = "setImmediate$" + Math.random() + "$";
+const { length: messagePrefixLength } = messagePrefix;
 const tasksByHandle = new Map();
 
-function setImmediate(callback) {
+export function setImmediate(callback) {
   tasksByHandle.set(nextHandle, callback);
   window.postMessage(messagePrefix + nextHandle, "*");
   return nextHandle++;
 }
 
-function clearImmediate(handle) {
+export function clearImmediate(handle) {
   tasksByHandle.delete(handle);
-}
-
-function run(task) {
-  const callback = task.callback;
-  const args = task.args;
-  switch (args.length) {
-  case 0:
-    callback();
-    break;
-  case 1:
-    callback(args[0]);
-    break;
-  case 2:
-    callback(args[0], args[1]);
-    break;
-  case 3:
-    callback(args[0], args[1], args[2]);
-    break;
-  default:
-    callback.apply(undefined, args);
-    break;
-  }
 }
 
 function runIfPresent(handle) {
@@ -64,8 +44,6 @@ window.addEventListener("message", (event) => {
     && typeof event.data === "string"
     && event.data.indexOf(messagePrefix) === 0
   ) {
-    runIfPresent(+event.data.slice(messagePrefix.length));
+    runIfPresent(+event.data.slice(messagePrefixLength));
   }
 }, false);
-
-export default setImmediate;
