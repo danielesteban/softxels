@@ -14,6 +14,10 @@
   * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
   * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
 
+* VR sculpting:
+  * Demo [https://softxels-xr.glitch.me/](https://softxels-xr.glitch.me/)
+  * Source: [https://glitch.com/edit/#!/softxels-xr](https://glitch.com/edit/#!/softxels-xr)
+
 ### Installation
 
 ```bash
