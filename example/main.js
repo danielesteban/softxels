@@ -27,7 +27,11 @@ class Main extends Scene {
     super();
 
     const chunkSize = 32;
-    const chunkMaterial = new MeshStandardMaterial({ vertexColors: true });
+    const chunkMaterial = new MeshStandardMaterial({
+      metalness: 0.2,
+      roughness: 0.8,
+      vertexColors: true,
+    });
     const params = location.hash.substr(2).split('/');
 
     this.background = new Color(0x0A1A2A);
@@ -53,6 +57,7 @@ class Main extends Scene {
         camera: renderer.camera,
         cascades: 3,
         lightDirection: new Vector3(0, -1, 0),
+        lightIntensity: 0.5,
         maxFar: 512,
         mode: 'practical',
         parent: this,
