@@ -50,7 +50,7 @@ new World({
   chunkSize: 32, // An uInt8 that controls the data/render chunks size (default: 32)
   renderRadius: 5, // Controls the chunk radius updateChunks loads around the anchor (default: 5)
   seed: 1337, // A uInt32 seed to drive the world generation noise (default: Random)
-  worldgen: 'default', // 'default' or 'empty'
+  worldgen: 'default', // 'default', 'terrain' or 'empty'
 });
 ```
 
