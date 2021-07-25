@@ -24,6 +24,7 @@ class Main extends Scene {
     super();
 
     const chunkSize = 32;
+    const params = location.hash.substr(2).split('/');
 
     this.background = new Color(0x0A1A2A);
     this.fog = new FogExp2(this.background, 0.015);
@@ -42,7 +43,7 @@ class Main extends Scene {
     this.add(this.player);
 
     let worldgen = 'default';
-    if (location.hash.substr(2) === 'terrain') {
+    if (params[0] === 'terrain') {
       worldgen = 'terrain';
       this.background.setHex(0x2A4A6A);
       this.fog.color.copy(this.background);
@@ -58,6 +59,26 @@ class Main extends Scene {
       chunkMaterial: new MeshPhongMaterial({ vertexColors: true }),
       chunkSize,
       worldgen,
+      ...(params.includes('persist') ? {
+        // Set a fixed seed so the generation is the same across reloads
+        seed: 1337,
+        // Persist volume changes to localStorage
+        storage: {
+          saveInterval: 5000,
+          async get(key) {
+            const stored = localStorage.getItem(`${worldgen}:${key}`);
+            if (!stored) {
+              return false;
+            }
+            const decoded = new Uint8Array(atob(stored).split('').map((c) => c.charCodeAt(0)));
+            return decoded;
+          },
+          set(key, value) {
+            const encoded = btoa([...value].map((c) => String.fromCharCode(c)).join(''));
+            localStorage.setItem(`${worldgen}:${key}`, encoded);
+          },
+        },
+      } : {}),
     });
     this.add(this.world);
   }

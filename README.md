@@ -9,6 +9,8 @@
 * Editable world:
   * Demo (default worldgen): [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
   * Demo (terrain worldgen): [https://softxels.gatunes.com/#/terrain](https://softxels.gatunes.com/#/terrain)
+  * Demo (default worldgen with persistence): [https://softxels.gatunes.com/#/persist](https://softxels.gatunes.com/#/persist)
+  * Demo (terrain worldgen with persistence): [https://softxels.gatunes.com/#/terrain/persist](https://softxels.gatunes.com/#/terrain/persist)
   * Source: [example/main.js](example/main.js)
 
 * VR sculpting:
@@ -55,6 +57,11 @@ new World({
   chunkSize: 32, // An uInt8 that controls the data/render chunks size (default: 32)
   renderRadius: 5, // Controls the chunk radius updateChunks loads around the anchor (default: 5)
   seed: 1337, // A uInt32 seed to drive the world generation noise (default: Random)
+  storage: { // An optional interface to load/store the chunk data
+    saveInterval: 5000, // The minimum time in between chunk saves in ms (default: 0)
+    async get(key), // An arbitrary async function that receives a chunk key and resolves the chunk data
+    set(key, value), // An arbitrary function that receives a chunk key and the data to be stored
+  },
   worldgen: 'default', // 'default', 'terrain' or 'empty'
 });
 ```

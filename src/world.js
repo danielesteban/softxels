@@ -13,6 +13,7 @@ class World extends Group {
     chunkSize = 32,
     renderRadius = 5,
     seed = Math.floor(Math.random() * 2147483647),
+    storage = null,
     worldgen = 'default',
   } = {}) {
     super();
@@ -33,6 +34,8 @@ class World extends Group {
       neighbors: new Map(),
       mesh: new Map(),
     };
+    this.saving = new Map();
+    this.storage = storage;
     this.workers = {
       mesher: new Worker({
         options: { chunkSize },
@@ -82,7 +85,7 @@ class World extends Group {
   }
 
   generateChunk(x, y, z) {
-    const { chunkSize, dataChunks, loading: { data: loading }, workers } = this;
+    const { chunkSize, dataChunks, loading: { data: loading }, storage, workers } = this;
     const key = `${x}:${y}:${z}`;
     if (loading.has(key)) {
       return;
@@ -94,13 +97,28 @@ class World extends Group {
     }
     const request = { abort: false };
     loading.set(key, request);
-    workers.worldgen.run({ x, y, z }).then((data) => {
+    setImmediate(() => {
       if (request.abort) {
         return;
       }
-      loading.delete(key);
-      dataChunks.set(key, data);
-      this.loadPendingNeighbors(x, y, z);
+      (storage ? storage.get(key) : Promise.resolve(false))
+        .then((stored) => {
+          if (request.abort) {
+            return;
+          }
+          if (stored) {
+            return stored;
+          }
+          return workers.worldgen.run({ x, y, z });
+        })
+        .then((data) => {
+          if (request.abort) {
+            return;
+          }
+          loading.delete(key);
+          dataChunks.set(key, data);
+          this.loadPendingNeighbors(x, y, z);
+        });
     });
   }
 
@@ -178,6 +196,19 @@ class World extends Group {
     }
   }
 
+  saveChunk(x, y, z) {
+    const { dataChunks, saving, storage } = this;
+    const key = `${x}:${y}:${z}`;
+    if (!storage || saving.has(key)) {
+      return;
+    }
+    saving.set(key, true);
+    setTimeout(() => {
+      saving.delete(key);
+      storage.set(key, dataChunks.get(key));
+    }, storage.saveInterval || 0);
+  }
+
   updateChunks(anchor) {
     const { aux: { chunk }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(chunk.copy(anchor)).divideScalar(chunkSize).floor();
@@ -222,6 +253,7 @@ class World extends Group {
         if (color) {
           data.set([color.r, color.g, color.b], index + 1);
         }
+        this.saveChunk(chunk.x, chunk.y, chunk.z);
         affected.set(key, true);
         if (voxel.x === 0) {
           affected.set(`${chunk.x - 1}:${chunk.y}:${chunk.z}`, true);
