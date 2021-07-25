@@ -34,6 +34,7 @@ class Main extends Scene {
     });
     const params = location.hash.substr(2).split('/');
 
+    this.ambient = 'ambient';
     this.background = new Color(0x0A1A2A);
     this.fog = new FogExp2(this.background, 0.015);
 
@@ -48,6 +49,7 @@ class Main extends Scene {
     let worldgen = 'default';
     if (params[0] === 'terrain') {
       worldgen = 'terrain';
+      this.ambient = 'underwater';
       renderer.renderer.shadowMap.enabled = true;
 			renderer.renderer.shadowMap.type = PCFSoftShadowMap;
       this.background.setHex(0x2A4A6A);
@@ -134,8 +136,9 @@ class Main extends Scene {
 
   onFirstInteraction() {
     {
-      const ambient = new Audio('/sounds/ambient.ogg');
+      const ambient = new Audio(`/sounds/${this.ambient}.ogg`);
       ambient.loop = true;
+      ambient.volume = 1 / 3;
       ambient.play();
     }
     (new AudioLoader()).loadAsync('/sounds/plop.ogg')
