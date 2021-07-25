@@ -30,6 +30,8 @@ class Chunk extends Mesh {
     this.chunk = (new Vector3()).copy(position);
     this.position.copy(position).multiplyScalar(chunkSize);
     this.updateMatrixWorld();
+    this.castShadow = true;
+    this.receiveShadow = true;
     this.matrixAutoUpdate = false;
   }
 

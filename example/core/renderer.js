@@ -83,12 +83,14 @@ class Renderer {
       camera,
       dom,
       renderer,
+      scene,
     } = this;
 
     const { width, height } = dom.renderer.getBoundingClientRect();
     renderer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+    scene.onResize();
   }
 
   static patchFog() {

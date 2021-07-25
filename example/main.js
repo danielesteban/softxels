@@ -1,13 +1,16 @@
 import {
+  AmbientLight,
   AudioLoader,
   Color,
-  DirectionalLight,
   FogExp2,
-  MeshPhongMaterial,
+  MeshStandardMaterial,
+  PCFSoftShadowMap,
   PositionalAudio,
   SpotLight,
   Scene,
+  Vector3,
 } from 'three';
+import { CSM } from 'three/examples/jsm/csm/CSM.js';
 import World from 'softxels';
 import Player from './core/player.js';
 import Renderer from './core/renderer.js';
@@ -24,20 +27,16 @@ class Main extends Scene {
     super();
 
     const chunkSize = 32;
+    const chunkMaterial = new MeshStandardMaterial({ vertexColors: true });
     const params = location.hash.substr(2).split('/');
 
     this.background = new Color(0x0A1A2A);
     this.fog = new FogExp2(this.background, 0.015);
 
-    const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
-    light.target.position.set(0, 0, -1);
-    light.add(light.target);
-
     this.player = new Player({
       camera: renderer.camera,
       renderer: renderer.dom.renderer,
     });
-    this.player.camera.add(light);
     this.player.position.setScalar(chunkSize * 0.5);
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
@@ -45,18 +44,30 @@ class Main extends Scene {
     let worldgen = 'default';
     if (params[0] === 'terrain') {
       worldgen = 'terrain';
+      renderer.renderer.shadowMap.enabled = true;
+			renderer.renderer.shadowMap.type = PCFSoftShadowMap;
       this.background.setHex(0x2A4A6A);
       this.fog.color.copy(this.background);
-      const sun = new DirectionalLight(0xFFFFFF, 0.5);
-      sun.position.set(0, 1, 1);
-      sun.lookAt(0, 0, 0);
-      sun.target.position.set(0, 0, -1);
-      sun.add(sun.target);
-      this.add(sun);
+      this.add(new AmbientLight(0xFFFFFF, 0.1));
+      this.csm = new CSM({
+        camera: renderer.camera,
+        cascades: 3,
+        lightDirection: new Vector3(0, -1, 0),
+        maxFar: 512,
+        mode: 'practical',
+        parent: this,
+        shadowMapSize: 1024,
+      });
+      this.csm.setupMaterial(chunkMaterial);
+    } else {
+      const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
+      light.target.position.set(0, 0, -1);
+      light.add(light.target);
+      this.player.camera.add(light);
     }
 
     this.world = new World({
-      chunkMaterial: new MeshPhongMaterial({ vertexColors: true }),
+      chunkMaterial,
       chunkSize,
       worldgen,
       ...(params.includes('persist') ? {
@@ -84,9 +95,12 @@ class Main extends Scene {
   }
 
   onAnimationTick(animation) {
-    const { player, sfx, world } = this;
+    const { csm, player, sfx, world } = this;
     player.onAnimationTick(animation);
     world.updateChunks(player.position);
+    if (csm) {
+      csm.update();
+    }
 
     if (
       player.buttons.primaryDown
@@ -131,6 +145,13 @@ class Main extends Scene {
           return audio;
         });
       });
+  }
+
+  onResize() {
+    const { csm } = this;
+    if (csm) {
+      csm.updateFrustums();
+    }
   }
 }
 
