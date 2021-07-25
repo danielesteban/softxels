@@ -37,6 +37,7 @@ static void setColorFromNoise(
 void run(
   Voxel* chunk,
   unsigned char chunkSize,
+  unsigned char generator,
   const int seed,
   int chunkX,
   int chunkY,
@@ -51,9 +52,19 @@ void run(
   for (int i = 0, z = chunkZ; z < chunkZ + chunkSize; z++) {
     for (int y = chunkY; y < chunkY + chunkSize; y++) {
       for (int x = chunkX; x < chunkX + chunkSize; x++, i++) {
-        chunk[i].value = (
-          fmin(fabs(fnlGetNoise3D(&noise, x * 1.5f, y * 1.5f, z * 1.5f)) * 384.0f, 255.0f)
-        );
+        switch (generator) {
+          default:
+          case 0: // default
+            chunk[i].value = (
+              fmin(fabs(fnlGetNoise3D(&noise, x * 1.5f, y * 1.5f, z * 1.5f)) * 384.0f, 255.0f)
+            );
+          break;
+          case 1: // terrain
+            chunk[i].value = (
+              fmin(fmax(64.0f + fabs(fnlGetNoise3D(&noise, x * 0.75f, y * 0.75f, z * 0.75f)) * 96.0f - y, 0.0f), 255.0f)
+            );
+            break;
+        }
         setColorFromNoise(
           &chunk[i],
           fabs(fnlGetNoise3D(&noise, z, x, y)) * 0xFF

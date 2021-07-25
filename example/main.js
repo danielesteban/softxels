@@ -1,6 +1,7 @@
 import {
   AudioLoader,
   Color,
+  DirectionalLight,
   FogExp2,
   MeshPhongMaterial,
   PositionalAudio,
@@ -25,7 +26,7 @@ class Main extends Scene {
     const chunkSize = 32;
 
     this.background = new Color(0x0A1A2A);
-    this.fog = new FogExp2(this.background, 0.02);
+    this.fog = new FogExp2(this.background, 0.015);
 
     const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
     light.target.position.set(0, 0, -1);
@@ -40,9 +41,23 @@ class Main extends Scene {
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
 
+    let worldgen = 'default';
+    if (location.hash.substr(2) === 'terrain') {
+      worldgen = 'terrain';
+      this.background.setHex(0x2A4A6A);
+      this.fog.color.copy(this.background);
+      const sun = new DirectionalLight(0xFFFFFF, 0.5);
+      sun.position.set(0, 1, 1);
+      sun.lookAt(0, 0, 0);
+      sun.target.position.set(0, 0, -1);
+      sun.add(sun.target);
+      this.add(sun);
+    }
+
     this.world = new World({
       chunkMaterial: new MeshPhongMaterial({ vertexColors: true }),
       chunkSize,
+      worldgen,
     });
     this.add(this.world);
   }

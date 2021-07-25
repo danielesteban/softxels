@@ -7,13 +7,13 @@
     "start": "npm run build -- -w"
   },
   "dependencies": {
-    "softxels": "^0.0.27"
+    "softxels": "^0.0.28"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.4",
     "@rollup/plugin-commonjs": "^19.0.1",
-    "@rollup/plugin-node-resolve": "^13.0.2",
-    "rollup": "^2.53.2",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "rollup": "^2.53.3",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-serve": "^1.1.0",
