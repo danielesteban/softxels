@@ -35,7 +35,8 @@ class Main extends Scene {
       vertexColors: true,
     });
     const params = location.hash.substr(2).split('/');
-    window.onhashchange = () => location.reload();
+    if (params[0] === '') location.hash = '/terrain';
+    setTimeout(() => { window.onhashchange = () => location.reload() }, 0);
 
     this.background = new Color(0x0A1A2A);
     this.fog = new FogExp2(this.background, 0.015);
@@ -110,7 +111,7 @@ class Main extends Scene {
         .loadAsync('renderables/fish.glb')
         .then(({ scene: { children: [model] } }) => {
           model.geometry.rotateY(Math.PI);
-          model.geometry.scale.setScalar(2);
+          model.geometry.scale(2, 2, 2);
           model.material.color.multiplyScalar(5);
           this.csm.setupMaterial(model.material);
           Fish.geometry = model.geometry;
