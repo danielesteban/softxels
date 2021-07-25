@@ -12,13 +12,11 @@ typedef struct {
 
 static void setColorFromNoise(
   Voxel* voxel,
-  float noise
+  const float noise
 ) {
-  float h = noise;
-  float s = 0.8f;
-  float v = 1.0f;
-
-  float r, g, b;
+  const float h = noise;
+  const float s = 0.8f;
+  const float v = 1.0f;
   
   const int i = floor(h * 6);
   const float f = h * 6 - i;
@@ -26,6 +24,7 @@ static void setColorFromNoise(
   const float q = v * (1 - f * s);
   const float t = v * (1 - (1 - f) * s);
   
+  float r, g, b;
   switch (i % 6) {
     case 0: r = v, g = t, b = p; break;
     case 1: r = q, g = v, b = p; break;
