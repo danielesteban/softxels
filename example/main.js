@@ -11,9 +11,11 @@ import {
   Vector3,
 } from 'three';
 import { CSM } from 'three/examples/jsm/csm/CSM.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import World from 'softxels';
 import Player from './core/player.js';
 import Renderer from './core/renderer.js';
+import Fish from './renderables/fish.js';
 
 Renderer.patchFog();
 
@@ -33,8 +35,8 @@ class Main extends Scene {
       vertexColors: true,
     });
     const params = location.hash.substr(2).split('/');
+    window.onhashchange = () => location.reload();
 
-    this.ambient = 'ambient';
     this.background = new Color(0x0A1A2A);
     this.fog = new FogExp2(this.background, 0.015);
 
@@ -46,31 +48,34 @@ class Main extends Scene {
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
 
-    let worldgen = 'default';
-    if (params[0] === 'terrain') {
-      worldgen = 'terrain';
-      this.ambient = 'underwater';
-      renderer.renderer.shadowMap.enabled = true;
-			renderer.renderer.shadowMap.type = PCFSoftShadowMap;
-      this.background.setHex(0x2A4A6A);
-      this.fog.color.copy(this.background);
-      this.add(new AmbientLight(0xFFFFFF, 0.1));
-      this.csm = new CSM({
-        camera: renderer.camera,
-        cascades: 3,
-        lightDirection: new Vector3(0, -1, 0),
-        lightIntensity: 0.5,
-        maxFar: 512,
-        mode: 'practical',
-        parent: this,
-        shadowMapSize: 1024,
-      });
-      this.csm.setupMaterial(chunkMaterial);
-    } else {
-      const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
-      light.target.position.set(0, 0, -1);
-      light.add(light.target);
-      this.player.camera.add(light);
+    const worldgen = params[0] === 'default' ? 'default' : 'terrain';
+    switch (worldgen) {
+      case 'default':
+        this.ambient = 'ambient';
+        const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
+        light.target.position.set(0, 0, -1);
+        light.add(light.target);
+        this.player.camera.add(light);
+        break;
+      case 'terrain':
+        renderer.renderer.shadowMap.enabled = true;
+        renderer.renderer.shadowMap.type = PCFSoftShadowMap;
+        this.ambient = 'underwater';
+        this.background.setHex(0x2A4A6A);
+        this.fog.color.copy(this.background);
+        this.add(new AmbientLight(0xFFFFFF, 0.1));
+        this.csm = new CSM({
+          camera: renderer.camera,
+          cascades: 3,
+          lightDirection: new Vector3(0, -1, 0),
+          lightIntensity: 0.5,
+          maxFar: 512,
+          mode: 'practical',
+          parent: this,
+          shadowMapSize: 1024,
+        });
+        this.csm.setupMaterial(chunkMaterial);
+        break;
     }
 
     this.world = new World({
@@ -99,14 +104,35 @@ class Main extends Scene {
       } : {}),
     });
     this.add(this.world);
+
+    if (worldgen === 'terrain') {
+      (new GLTFLoader())
+        .loadAsync('renderables/fish.glb')
+        .then(({ scene: { children: [model] } }) => {
+          model.geometry.rotateY(Math.PI);
+          model.geometry.scale.setScalar(2);
+          model.material.color.multiplyScalar(5);
+          this.csm.setupMaterial(model.material);
+          Fish.geometry = model.geometry;
+          Fish.material = model.material;
+          this.fish = new Fish({
+            anchor: this.player.position,
+            world: this.world,
+          });
+          this.add(this.fish);
+        });
+    }
   }
 
   onAnimationTick(animation) {
-    const { csm, player, sfx, world } = this;
+    const { csm, fish, player, sfx, world } = this;
     player.onAnimationTick(animation);
     world.updateChunks(player.position);
     if (csm) {
       csm.update();
+    }
+    if (fish) {
+      fish.animate(animation);
     }
 
     if (

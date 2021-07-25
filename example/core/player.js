@@ -31,7 +31,7 @@ class Player extends Group {
     this.keyboard = new Vector3(0, 0, 0);
     this.pointer = new Vector2(0, 0);
     this.raycaster = new Raycaster();
-    this.speed = 6;
+    this.speed = 8;
     this.add(camera);
 
     this.onBlur = this.onBlur.bind(this);
@@ -264,7 +264,7 @@ class Player extends Group {
   }
 }
 
-Player.minSpeed = Math.log(2);
+Player.minSpeed = Math.log(4);
 Player.maxSpeed = Math.log(40);
 Player.speedRange = Player.maxSpeed - Player.minSpeed;
 

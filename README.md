@@ -7,9 +7,9 @@
 ### Examples
 
 * Editable world:
-  * Demo (default worldgen): [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+  * Demo (default worldgen): [https://softxels.gatunes.com/#/default](https://softxels.gatunes.com/#/default)
   * Demo (terrain worldgen): [https://softxels.gatunes.com/#/terrain](https://softxels.gatunes.com/#/terrain)
-  * Demo (default worldgen with persistence): [https://softxels.gatunes.com/#/persist](https://softxels.gatunes.com/#/persist)
+  * Demo (default worldgen with persistence): [https://softxels.gatunes.com/#/default/persist](https://softxels.gatunes.com/#/default/persist)
   * Demo (terrain worldgen with persistence): [https://softxels.gatunes.com/#/terrain/persist](https://softxels.gatunes.com/#/terrain/persist)
   * Source: [example/main.js](example/main.js)
 
