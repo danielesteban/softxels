@@ -35,7 +35,7 @@ class Renderer {
     window.addEventListener('keydown', this.onFirstInteraction, false);
 
     window.addEventListener('resize', this.onResize.bind(this), false);
-    this.onResize();
+    requestAnimationFrame(this.onResize.bind(this));
   }
 
   onAnimationTick() {
