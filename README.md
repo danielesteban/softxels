@@ -7,16 +7,17 @@
 ### Examples
 
 * Editable world:
-  * Demo: [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+  * Demo (default worldgen): [https://softxels.gatunes.com/](https://softxels.gatunes.com/)
+  * Demo (terrain worldgen): [https://softxels.gatunes.com/#/terrain](https://softxels.gatunes.com/#/terrain)
   * Source: [example/main.js](example/main.js)
-
-* Random walkers:
-  * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
-  * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
 
 * VR sculpting:
   * Demo [https://softxels-xr.glitch.me/](https://softxels-xr.glitch.me/)
   * Source: [https://glitch.com/edit/#!/softxels-xr](https://glitch.com/edit/#!/softxels-xr)
+
+* Random walkers:
+  * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
+  * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
 
 ### Installation
 
