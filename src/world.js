@@ -199,7 +199,7 @@ class World extends Group {
   saveChunk(x, y, z) {
     const { dataChunks, saving, storage } = this;
     const key = `${x}:${y}:${z}`;
-    if (!storage || saving.has(key)) {
+    if (!storage || !storage.set || saving.has(key)) {
       return;
     }
     saving.set(key, true);
