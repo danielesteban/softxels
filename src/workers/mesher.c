@@ -103,6 +103,10 @@ static void growBox(
   if (box->max.z < point->z) box->max.z = point->z;
 }
 
+static const float SRGBToLinear(const float c) {
+	return (c < 0.04045f) ? c * 0.0773993808f : pow(c * 0.9478672986f + 0.0521327014f, 2.4f);
+}
+
 static void interpolate(
   Point* point,
   const Cell* p1,
@@ -112,9 +116,9 @@ static void interpolate(
   point->position.x = (float) p1->x + step * ((float) p2->x - p1->x);
   point->position.y = (float) p1->y + step * ((float) p2->y - p1->y);
   point->position.z = (float) p1->z + step * ((float) p2->z - p1->z);
-  point->color.x = ((float) p1->voxel->r + step * ((float) p2->voxel->r - p1->voxel->r)) / 255.0;
-  point->color.y = ((float) p1->voxel->g + step * ((float) p2->voxel->g - p1->voxel->g)) / 255.0;
-  point->color.z = ((float) p1->voxel->b + step * ((float) p2->voxel->b - p1->voxel->b)) / 255.0;
+  point->color.x = SRGBToLinear(((float) p1->voxel->r + step * ((float) p2->voxel->r - p1->voxel->r)) / 255.0f);
+  point->color.y = SRGBToLinear(((float) p1->voxel->g + step * ((float) p2->voxel->g - p1->voxel->g)) / 255.0f);
+  point->color.z = SRGBToLinear(((float) p1->voxel->b + step * ((float) p2->voxel->b - p1->voxel->b)) / 255.0f);
 }
 
 const unsigned int run(
