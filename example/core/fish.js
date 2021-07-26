@@ -29,8 +29,8 @@ class Fish extends InstancedMesh {
     this.instances = [...Array(instances)].map((v, i) => {
       this.setColorAt(i, color.setHSL(
         Math.random(),
-        0.7 + Math.random() * 0.3,
-        0.7 + Math.random() * 0.3
+        0.75 + Math.random() * 0.25,
+        0.5 + Math.random() * 0.5
       ).convertSRGBToLinear());
       return {
         chunk: new Vector3(Infinity, Infinity, Infinity),

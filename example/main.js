@@ -123,7 +123,7 @@ class Main extends Scene {
             model = model.children.length ? model.children[0] : model;
             model.geometry.rotateY(rotation);
             model.geometry.scale(scale, scale, scale);
-            model.material.envMapIntensity = 0.4;
+            model.material.envMapIntensity = 0.5;
             this.csm.setupMaterial(model.material);
             const mesh = new Fish({
               model,
