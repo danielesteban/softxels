@@ -61,12 +61,13 @@ class Fish extends InstancedMesh {
       instance.step += animation.delta * instance.speed;
       dummy.position.lerpVectors(instance.from, instance.to, Math.min(instance.step, 1));
       dummy.scale.setScalar(3 - instance.speed);
-      dummy.lookAt(vector.lerpVectors(instance.fromDirection, instance.toDirection, Math.min(instance.step, 1)).add(dummy.position));
-      dummy.updateMatrix();
-      this.setMatrixAt(
-        i,
-        dummy.matrix
+      dummy.lookAt(
+        vector
+          .lerpVectors(instance.fromDirection, instance.toDirection, Math.min(instance.step, 1))
+          .add(dummy.position)
       );
+      dummy.updateMatrix();
+      this.setMatrixAt(i, dummy.matrix);
       if (instance.step >= 1) {
         if (dummy.position.distanceTo(anchor) > spawnRadius || !this.destination(instance)) {
           this.spawn(instance);
