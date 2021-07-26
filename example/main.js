@@ -51,13 +51,14 @@ class Main extends Scene {
 
     const worldgen = params[0] === 'default' ? 'default' : 'terrain';
     switch (worldgen) {
-      case 'default':
+      case 'default': {
         this.ambient = 'ambient';
         const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
         light.target.position.set(0, 0, -1);
         light.add(light.target);
         this.player.camera.add(light);
         break;
+      }
       case 'terrain':
         renderer.renderer.shadowMap.enabled = true;
         renderer.renderer.shadowMap.type = PCFSoftShadowMap;
