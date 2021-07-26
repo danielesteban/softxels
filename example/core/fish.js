@@ -121,14 +121,14 @@ class Fish extends InstancedMesh {
       chunk.y * chunkSize + voxel.y,
       chunk.z * chunkSize + voxel.z
     );
-    return this.destination(instance);
+    return this.destination(instance, attempts);
   }
 
-  destination(instance) {
+  destination(instance, attempts = 10) {
     const { aux: { chunk, direction, vector, voxel }, world } = this;
     let attempt = 0;
     do {
-      if (attempt++ > 10) {
+      if (attempt++ > attempts) {
         return false;
       }
       direction.copy(instance.toDirection);
