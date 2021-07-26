@@ -38,7 +38,6 @@ class Main extends Scene {
       metalness: 0.2,
       roughness: 0.8,
       vertexColors: true,
-      envMap: (new PMREMGenerator(renderer.renderer)).fromScene(new RoomEnvironment(), 0.08).texture,
       envMapIntensity: 0.1,
     });
 
@@ -82,6 +81,7 @@ class Main extends Scene {
         break;
     }
     this.fog = new FogExp2(this.background, 0.015);
+    this.environment = (new PMREMGenerator(renderer.renderer)).fromScene(new RoomEnvironment(), 0.08).texture;
 
     this.world = new World({
       chunkMaterial,
@@ -114,7 +114,7 @@ class Main extends Scene {
       this.fish = [];
       const loader = new GLTFLoader();
       [
-        { id: 'barramundi', instances: 128, rotation: Math.PI, scale: 2, intensity: 5 },
+        { id: 'barramundi', instances: 128, rotation: Math.PI, scale: 2 },
         { id: 'fish', instances: 128, rotation: Math.PI * 0.5, scale: 0.25 },
       ].forEach(({ id, instances, rotation, scale, intensity }) => (
         loader
@@ -123,7 +123,7 @@ class Main extends Scene {
             model = model.children.length ? model.children[0] : model;
             model.geometry.rotateY(rotation);
             model.geometry.scale(scale, scale, scale);
-            model.material.color.multiplyScalar(intensity || 1);
+            model.material.envMapIntensity = 0.4;
             this.csm.setupMaterial(model.material);
             const mesh = new Fish({
               model,
