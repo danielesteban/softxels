@@ -1,9 +1,7 @@
 import {
   Color,
   DynamicDrawUsage,
-  IcosahedronGeometry,
   InstancedMesh,
-  MeshStandardMaterial,
   Object3D,
   Vector3,
 } from 'three';
