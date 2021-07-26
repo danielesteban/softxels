@@ -1,16 +1,17 @@
 import {
-  AmbientLight,
   AudioLoader,
   Color,
   FogExp2,
   MeshStandardMaterial,
   PCFSoftShadowMap,
+  PMREMGenerator,
   PositionalAudio,
   SpotLight,
   Scene,
   Vector3,
 } from 'three';
 import { CSM } from 'three/examples/jsm/csm/CSM.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import World from 'softxels';
 import Fish from './core/fish.js';
@@ -37,6 +38,8 @@ class Main extends Scene {
       metalness: 0.2,
       roughness: 0.8,
       vertexColors: true,
+      envMap: (new PMREMGenerator(renderer.renderer)).fromScene(new RoomEnvironment(), 0.08).texture,
+      envMapIntensity: 0.1,
     });
 
     this.player = new Player({
@@ -65,7 +68,6 @@ class Main extends Scene {
         renderer.renderer.shadowMap.type = PCFSoftShadowMap;
         this.ambient = 'underwater';
         this.background = new Color(0x2A4A6A);
-        this.add(new AmbientLight(0xFFFFFF, 0.1));
         this.csm = new CSM({
           camera: renderer.camera,
           cascades: 3,
