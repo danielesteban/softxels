@@ -81,7 +81,7 @@ class Main extends Scene {
         break;
     }
     this.fog = new FogExp2(this.background, 0.015);
-    this.environment = (new PMREMGenerator(renderer.renderer)).fromScene(new RoomEnvironment(), 0.08).texture;
+    this.environment = (new PMREMGenerator(renderer.renderer)).fromScene(new RoomEnvironment(), 0.04).texture;
 
     this.world = new World({
       chunkMaterial,
