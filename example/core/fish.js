@@ -151,12 +151,11 @@ class Fish extends InstancedMesh {
         return false;
       }
       if (closest) {
-        direction
-          .subVectors(closest, instance.to)
-          .normalize()
-          .multiplyScalar(0.5)
-          .addScaledVector(instance.toDirection, 0.5)
-          .normalize();
+        direction.lerpVectors(
+          instance.toDirection,
+          vector.subVectors(closest, instance.to).normalize(),
+          0.5
+        );
       } else {
         direction.copy(instance.toDirection);
       }
