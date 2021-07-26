@@ -39,8 +39,6 @@ class Main extends Scene {
       vertexColors: true,
     });
 
-    this.background = new Color(0x0A1A2A);
-    this.fog = new FogExp2(this.background, 0.015);
     this.player = new Player({
       camera: renderer.camera,
       renderer: renderer.dom.renderer,
@@ -50,9 +48,12 @@ class Main extends Scene {
     this.add(this.player);
 
     const worldgen = params[0] === 'default' ? 'default' : 'terrain';
+    document.getElementById(`worldgen:${worldgen}`).classList.add('active');
     switch (worldgen) {
+      default:
       case 'default': {
         this.ambient = 'ambient';
+        this.background = new Color(0x0A1A2A);
         const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);
         light.target.position.set(0, 0, -1);
         light.add(light.target);
@@ -63,8 +64,7 @@ class Main extends Scene {
         renderer.renderer.shadowMap.enabled = true;
         renderer.renderer.shadowMap.type = PCFSoftShadowMap;
         this.ambient = 'underwater';
-        this.background.setHex(0x2A4A6A);
-        this.fog.color.copy(this.background);
+        this.background = new Color(0x2A4A6A);
         this.add(new AmbientLight(0xFFFFFF, 0.1));
         this.csm = new CSM({
           camera: renderer.camera,
@@ -79,6 +79,7 @@ class Main extends Scene {
         this.csm.setupMaterial(chunkMaterial);
         break;
     }
+    this.fog = new FogExp2(this.background, 0.015);
 
     this.world = new World({
       chunkMaterial,
