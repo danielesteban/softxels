@@ -109,35 +109,31 @@ class Main extends Scene {
     this.add(this.world);
 
     if (worldgen === 'terrain') {
+      this.fish = [];
       const loader = new GLTFLoader();
-      Promise.all(
-        [
-          { id: 'barramundi', instances: 128, rotation: Math.PI, scale: 2, intensity: 5 },
-          { id: 'fish', instances: 128, rotation: Math.PI * 0.5, scale: 0.25 },
-        ]
-          .map(({ id, instances, rotation, scale, intensity }) => (
-            loader
-              .loadAsync(`models/${id}.glb`)
-              .then(({ scene: { children: [model] } }) => {
-                model = model.children.length ? model.children[0] : model;
-                model.geometry.rotateY(rotation);
-                model.geometry.scale(scale, scale, scale);
-                model.material.color.multiplyScalar(intensity || 1);
-                this.csm.setupMaterial(model.material);
-                return new Fish({
-                  model,
-                  instances,
-                  radius: 96,
-                  anchor: this.player.position,
-                  world: this.world,
-                });
-              })
-          ))
-      )
-        .then((meshes) => {
-          meshes.forEach((mesh) => this.add(mesh));
-          this.fish = meshes;
-        });
+      [
+        { id: 'barramundi', instances: 128, rotation: Math.PI, scale: 2, intensity: 5 },
+        { id: 'fish', instances: 128, rotation: Math.PI * 0.5, scale: 0.25 },
+      ].forEach(({ id, instances, rotation, scale, intensity }) => (
+        loader
+          .loadAsync(`models/${id}.glb`)
+          .then(({ scene: { children: [model] } }) => {
+            model = model.children.length ? model.children[0] : model;
+            model.geometry.rotateY(rotation);
+            model.geometry.scale(scale, scale, scale);
+            model.material.color.multiplyScalar(intensity || 1);
+            this.csm.setupMaterial(model.material);
+            const mesh = new Fish({
+              model,
+              instances,
+              radius: 96,
+              anchor: this.player.position,
+              world: this.world,
+            });
+            this.fish.push(mesh);
+            this.add(mesh);
+          })
+      ));
     }
   }
 
@@ -145,12 +141,8 @@ class Main extends Scene {
     const { csm, fish, player, sfx, world } = this;
     player.onAnimationTick(animation);
     world.updateChunks(player.position);
-    if (csm) {
-      csm.update();
-    }
-    if (fish) {
-      fish.forEach((mesh) => mesh.animate(animation));
-    }
+    if (csm) csm.update();
+    if (fish) fish.forEach((mesh) => mesh.animate(animation));
 
     if (
       player.buttons.primaryDown
@@ -200,9 +192,7 @@ class Main extends Scene {
 
   onResize() {
     const { csm } = this;
-    if (csm) {
-      csm.updateFrustums();
-    }
+    if (csm) csm.updateFrustums();
   }
 }
 
