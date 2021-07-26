@@ -28,19 +28,19 @@ class Main extends Scene {
   constructor() {
     super();
 
+    const params = location.hash.substr(2).split('/');
+    if (params[0] === '') location.hash = '/terrain';
+    setTimeout(() => { window.onhashchange = () => location.reload(); }, 0);
+
     const chunkSize = 32;
     const chunkMaterial = new MeshStandardMaterial({
       metalness: 0.2,
       roughness: 0.8,
       vertexColors: true,
     });
-    const params = location.hash.substr(2).split('/');
-    if (params[0] === '') location.hash = '/terrain';
-    setTimeout(() => { window.onhashchange = () => location.reload() }, 0);
 
     this.background = new Color(0x0A1A2A);
     this.fog = new FogExp2(this.background, 0.015);
-
     this.player = new Player({
       camera: renderer.camera,
       renderer: renderer.dom.renderer,
