@@ -24,6 +24,7 @@ class Fish extends InstancedMesh {
     };
     this.anchor = anchor;
     this.world = world;
+    this.chunks = new Map();
     const color = new Color();
     this.instances = [...Array(instances)].map((v, i) => {
       this.setColorAt(i, color.setHSL(
@@ -32,6 +33,7 @@ class Fish extends InstancedMesh {
         0.7 + Math.random() * 0.3
       ).convertSRGBToLinear());
       return {
+        chunk: new Vector3(Infinity, Infinity, Infinity),
         from: new Vector3(),
         to: new Vector3(),
         fromDirection: new Vector3(),
@@ -124,13 +126,40 @@ class Fish extends InstancedMesh {
   }
 
   destination(instance, attempts = 10) {
-    const { aux: { chunk, direction, vector, voxel }, world } = this;
+    const { aux: { chunk, direction, vector, voxel }, chunks, world } = this;
+    
+    let closest;
+    {
+      const map = chunks.get(`${instance.chunk.x}:${instance.chunk.y}:${instance.chunk.z}`);
+      if (map) {
+        closest = map.reduce((closest, fish) => {
+          if (fish !== instance) {
+            const distance = instance.to.distanceTo(fish.to);
+            if (distance > 3 && distance < closest.distance) {
+              closest.position = fish.to;
+              closest.distance = distance;
+            }
+          }
+          return closest;
+        }, { distance: Infinity }).position;
+      }
+    }
+
     let attempt = 0;
     do {
       if (attempt++ > attempts) {
         return false;
       }
-      direction.copy(instance.toDirection);
+      if (closest) {
+        direction
+          .subVectors(closest, instance.to)
+          .normalize()
+          .multiplyScalar(0.5)
+          .addScaledVector(instance.toDirection, 0.5)
+          .normalize();
+      } else {
+        direction.copy(instance.toDirection);
+      }
       if (attempt > 5) {
         direction.negate();
       }
@@ -139,6 +168,7 @@ class Fish extends InstancedMesh {
         .normalize()
         .multiplyScalar(2 + Math.random() * 2);
     } while (!this.test(instance.to, direction));
+
     const { chunkSize } = world;
     instance.fromDirection.copy(instance.toDirection);
     instance.from.copy(instance.to);
@@ -149,6 +179,28 @@ class Fish extends InstancedMesh {
       chunk.z * chunkSize + voxel.z
     );
     instance.step = 0;
+
+    if (!chunk.equals(instance.chunk)) {
+      {
+        const key = `${instance.chunk.x}:${instance.chunk.y}:${instance.chunk.z}`;
+        let map = chunks.get(key);
+        if (map) {
+          map.splice(map.findIndex((i) => i === instance), 1);
+          if (map.length) {
+            chunks.set(key, map);
+          } else {
+            chunks.delete(key);
+          }
+        }
+      }
+      instance.chunk.copy(chunk);
+      {
+        const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
+        const map = chunks.get(key) || [];
+        map.push(instance);
+        chunks.set(key, map);
+      }
+    }
     return true;
   }
 }
