@@ -107,12 +107,11 @@ class Fish extends InstancedMesh {
         return false;
       }
       const radius = spawnRadius * (0.5 + Math.random() * 0.5);
-      direction.copy(instance.toDirection)
-        .add(
-          vector.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
-        )
+      direction
+        .copy(instance.toDirection)
+        .add(vector.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5))
         .normalize()
-        .multiply({ x: radius, y: radius * 0.5, z: radius });
+        .multiply(vector.set(radius, radius * 0.5, radius));
     } while (!this.test(anchor, direction));
     const { chunkSize } = world;
     instance.toDirection.copy(direction.normalize());
@@ -136,9 +135,7 @@ class Fish extends InstancedMesh {
         direction.negate();
       }
       direction
-        .add(
-          vector.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
-        )
+        .add(vector.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5))
         .normalize()
         .multiplyScalar(2 + Math.random() * 2);
     } while (!this.test(instance.to, direction));
