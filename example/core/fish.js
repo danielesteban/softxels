@@ -51,8 +51,8 @@ class Fish extends InstancedMesh {
   animate(animation) {
     const { aux: { dummy, vector }, anchor, instances, maxInstances, spawnRadius } = this;
     if (this.count < maxInstances) {
-      if (this.spawn(instances[this.count])) {
-        this.count += 1;
+      if (this.spawn(instances[this.count], 1)) {
+        this.count++;
       }
     }
     const { count } = this;
@@ -99,11 +99,11 @@ class Fish extends InstancedMesh {
     return true;
   }
 
-  spawn(instance) {
+  spawn(instance, attempts = 10) {
     const { aux: { chunk, direction, vector, voxel }, anchor, spawnRadius, world } = this;
     let attempt = 0;
     do {
-      if (attempt++ > 10) {
+      if (attempt++ > attempts) {
         return false;
       }
       const radius = spawnRadius * (0.5 + Math.random() * 0.5);
