@@ -66,7 +66,7 @@ void run(
           break;
           case 1: // terrain
             chunk[i].value = (
-              fmin(fmax(64.0f + fabs(fnlGetNoise3D(&noise, x * 0.75f, y * 0.75f, z * 0.75f)) * 128.0f - y, 0.0f), 255.0f)
+              fmin(fmax(64.0f + fabs(fnlGetNoise3D(&noise, x * 0.75f, y * 0.75f, z * 0.75f) - 0.1f) * 128.0f - (float) y, 0.0f), 255.0f)
             );
             break;
         }
