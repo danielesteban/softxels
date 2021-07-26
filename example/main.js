@@ -13,9 +13,9 @@ import {
 import { CSM } from 'three/examples/jsm/csm/CSM.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import World from 'softxels';
+import Fish from './core/fish.js';
 import Player from './core/player.js';
 import Renderer from './core/renderer.js';
-import Fish from './renderables/fish.js';
 
 Renderer.patchFog();
 
