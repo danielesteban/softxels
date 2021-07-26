@@ -30,8 +30,8 @@ export default {
     copy({
       targets: [
         { src: 'index.*', dest: 'dist' },
+        { src: 'models/*.glb', dest: 'dist/models' },
         { src: 'screenshot.png', dest: 'dist' },
-        { src: 'renderables/*.glb', dest: 'dist/renderables' },
         { src: 'sounds/*.ogg', dest: 'dist/sounds' },
       ],
       copyOnce: !process.env.ROLLUP_WATCH,

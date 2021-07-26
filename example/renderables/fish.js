@@ -9,25 +9,14 @@ import {
 } from 'three';
 
 class Fish extends InstancedMesh {
-  static setupGeometry() {
-    Fish.geometry = new IcosahedronGeometry(1, 2);
-  }
-
-  static setupMaterial() {
-    Fish.material = new MeshStandardMaterial();
-  }
-
   constructor({
     anchor,
+    instances,
+    model,
+    radius,
     world,
   }) {
-    if (!Fish.geometry) {
-      Fish.setupGeometry();
-    }
-    if (!Fish.material) {
-      Fish.setupMaterial();
-    }
-    super(Fish.geometry, Fish.material, Fish.maxInstances);
+    super(model.geometry, model.material, instances);
     this.aux = {
       chunk: new Vector3(),
       direction: new Vector3(),
@@ -37,20 +26,24 @@ class Fish extends InstancedMesh {
     };
     this.anchor = anchor;
     this.world = world;
-    this.instances = [...Array(Fish.maxInstances)].map(() => ({
-      from: new Vector3(),
-      to: new Vector3(),
-      fromDirection: new Vector3(),
-      toDirection: new Vector3(),
-      speed: 1 + Math.random(),
-      step: 0,
-    }));
     const color = new Color();
-    this.instances.forEach((v, i) => this.setColorAt(i, color.setRGB(
-      0.5 + Math.random(),
-      0.5 + Math.random(),
-      0.5 + Math.random()
-    ).convertSRGBToLinear()));
+    this.instances = [...Array(instances)].map((v, i) => {
+      this.setColorAt(i, color.setRGB(
+        0.5 + Math.random(),
+        0.5 + Math.random(),
+        0.5 + Math.random()
+      ).convertSRGBToLinear());
+      return {
+        from: new Vector3(),
+        to: new Vector3(),
+        fromDirection: new Vector3(),
+        toDirection: new Vector3(),
+        speed: 1 + Math.random(),
+        step: 0,
+      };
+    });
+    this.maxInstances = instances;
+    this.spawnRadius = radius;
     this.count = 0;
     this.receiveShadow = true;
     this.matrixAutoUpdate = false;
@@ -58,8 +51,8 @@ class Fish extends InstancedMesh {
   }
 
   animate(animation) {
-    const { aux: { dummy, vector }, anchor, instances } = this;
-    if (this.count < Fish.maxInstances) {
+    const { aux: { dummy, vector }, anchor, instances, maxInstances, spawnRadius } = this;
+    if (this.count < maxInstances) {
       if (this.spawn(instances[this.count])) {
         this.count += 1;
       }
@@ -77,7 +70,7 @@ class Fish extends InstancedMesh {
         dummy.matrix
       );
       if (instance.step >= 1) {
-        if (dummy.position.distanceTo(anchor) > Fish.radius || !this.destination(instance)) {
+        if (dummy.position.distanceTo(anchor) > spawnRadius || !this.destination(instance)) {
           this.spawn(instance);
         }
       }
@@ -108,13 +101,13 @@ class Fish extends InstancedMesh {
   }
 
   spawn(instance) {
-    const { aux: { chunk, direction, vector, voxel }, anchor, world } = this;
+    const { aux: { chunk, direction, vector, voxel }, anchor, spawnRadius, world } = this;
     let attempt = 0;
     do {
       if (attempt++ > 10) {
         return false;
       }
-      const radius = Fish.radius * (0.5 + Math.random() * 0.5);
+      const radius = spawnRadius * (0.5 + Math.random() * 0.5);
       direction.copy(instance.toDirection)
         .add(
           vector.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
@@ -163,8 +156,5 @@ class Fish extends InstancedMesh {
     return true;
   }
 }
-
-Fish.maxInstances = 256;
-Fish.radius = 96;
 
 export default Fish;

@@ -107,20 +107,34 @@ class Main extends Scene {
     this.add(this.world);
 
     if (worldgen === 'terrain') {
-      (new GLTFLoader())
-        .loadAsync('renderables/fish.glb')
-        .then(({ scene: { children: [model] } }) => {
-          model.geometry.rotateY(Math.PI);
-          model.geometry.scale(2, 2, 2);
-          model.material.color.multiplyScalar(5);
-          this.csm.setupMaterial(model.material);
-          Fish.geometry = model.geometry;
-          Fish.material = model.material;
-          this.fish = new Fish({
-            anchor: this.player.position,
-            world: this.world,
-          });
-          this.add(this.fish);
+      const loader = new GLTFLoader();
+      Promise.all(
+        [
+          { id: 'barramundi', instances: 128, rotation: Math.PI, scale: 2, intensity: 5 },
+          { id: 'fish', instances: 128, rotation: Math.PI * 0.5, scale: 0.25 },
+        ]
+          .map(({ id, instances, rotation, scale, intensity }) => (
+            loader
+              .loadAsync(`models/${id}.glb`)
+              .then(({ scene: { children: [model] } }) => {
+                model = model.children.length ? model.children[0] : model;
+                model.geometry.rotateY(rotation);
+                model.geometry.scale(scale, scale, scale);
+                model.material.color.multiplyScalar(intensity || 1);
+                this.csm.setupMaterial(model.material);
+                return new Fish({
+                  model,
+                  instances,
+                  radius: 96,
+                  anchor: this.player.position,
+                  world: this.world,
+                });
+              })
+          ))
+      )
+        .then((meshes) => {
+          meshes.forEach((mesh) => this.add(mesh));
+          this.fish = meshes;
         });
     }
   }
@@ -133,7 +147,7 @@ class Main extends Scene {
       csm.update();
     }
     if (fish) {
-      fish.animate(animation);
+      fish.forEach((mesh) => mesh.animate(animation));
     }
 
     if (
