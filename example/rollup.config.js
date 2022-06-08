@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import alias from '@rollup/plugin-alias';
-import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
 import livereload from 'rollup-plugin-livereload';
 import resolve from '@rollup/plugin-node-resolve';
@@ -22,7 +21,6 @@ export default {
         entries: { 'softxels': path.join(__dirname, '..', 'dist') },
       }),
     ] : []),
-    commonjs(),
     resolve({
       browser: true,
       moduleDirectories: [path.join(__dirname, 'node_modules')],

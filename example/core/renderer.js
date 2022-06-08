@@ -29,12 +29,13 @@ class Renderer {
     // this.renderer.setPixelRatio(window.devicePixelRatio || 1);
     this.renderer.setAnimationLoop(this.onAnimationTick.bind(this));
     dom.renderer.appendChild(this.renderer.domElement);
-
+    
     this.onFirstInteraction = this.onFirstInteraction.bind(this);
     window.addEventListener('click', this.onFirstInteraction, false);
     window.addEventListener('keydown', this.onFirstInteraction, false);
-
+    
     window.addEventListener('resize', this.onResize.bind(this), false);
+    document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
     requestAnimationFrame(this.onResize.bind(this));
   }
 
@@ -50,7 +51,7 @@ class Renderer {
     } = this;
 
     const animation = {
-      delta: Math.min(clock.getDelta(), 1 / 30),
+      delta: Math.min(clock.getDelta(), 1),
       time: clock.oldTime / 1000,
     };
 
@@ -91,6 +92,16 @@ class Renderer {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     scene.onResize();
+  }
+
+  onVisibilityChange() {
+    const { clock, fps } = this;
+    const isVisible = document.visibilityState === 'visible';
+    if (isVisible) {
+      clock.start();
+      fps.count = -1;
+      fps.lastTick = (clock.oldTime / 1000);
+    }
   }
 
   static patchFog() {

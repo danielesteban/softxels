@@ -46,6 +46,9 @@ class Main extends Scene {
       renderer: renderer.dom.renderer,
     });
     this.player.position.setScalar(chunkSize * 0.5);
+    this.player.targetPosition.copy(this.player.position);
+    this.player.camera.rotation.set(0, 0, 0, 'YXZ');
+    this.player.targetRotation.copy(this.player.camera.rotation);
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
 

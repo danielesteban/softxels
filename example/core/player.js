@@ -1,6 +1,6 @@
 import {
-  Euler,
   Group,
+  MathUtils,
   Raycaster,
   Vector2,
   Vector3,
@@ -15,7 +15,6 @@ class Player extends Group {
 
     this.aux = {
       center: new Vector2(),
-      euler: new Euler(0, 0, 0, 'YXZ'),
       direction: new Vector3(),
       forward: new Vector3(),
       right: new Vector3(),
@@ -32,6 +31,8 @@ class Player extends Group {
     this.pointer = new Vector2(0, 0);
     this.raycaster = new Raycaster();
     this.speed = 8;
+    this.targetPosition = this.position.clone();
+    this.targetRotation = camera.rotation.clone();
     this.add(camera);
 
     this.onBlur = this.onBlur.bind(this);
@@ -58,7 +59,6 @@ class Player extends Group {
     const {
       aux: {
         center,
-        euler,
         direction,
         forward,
         right,
@@ -72,21 +72,21 @@ class Player extends Group {
       pointer,
       position,
       speed,
+      targetPosition,
+      targetRotation,
       raycaster,
     } = this;
     if (!isLocked) {
       return;
     }
     if (pointer.x !== 0 || pointer.y !== 0) {
-      euler.setFromQuaternion(camera.quaternion);
-      euler.y -= pointer.x * 0.003;
-      euler.x -= pointer.y * 0.003;
+      targetRotation.y += pointer.x;
+      targetRotation.x += pointer.y;
+      targetRotation.x = Math.min(Math.max(targetRotation.x, Math.PI * -0.5), Math.PI * 0.5);
       pointer.set(0, 0);
-      const PI_2 = Math.PI / 2;
-      euler.x = Math.max(-PI_2, Math.min(PI_2, euler.x));
-      camera.quaternion.setFromEuler(euler);
-      camera.updateMatrixWorld();
     }
+    camera.rotation.y = MathUtils.damp(camera.rotation.y, targetRotation.y, 20, animation.delta);
+    camera.rotation.x = MathUtils.damp(camera.rotation.x, targetRotation.x, 20, animation.delta);
     ['primary', 'secondary', 'tertiary'].forEach((button) => {
       const state = buttonState[button];
       buttons[`${button}Down`] = state && buttons[button] !== state;
@@ -100,7 +100,7 @@ class Player extends Group {
     ) {
       camera.getWorldDirection(forward);
       right.crossVectors(worldUp, forward);
-      position.addScaledVector(
+      targetPosition.addScaledVector(
         direction
           .set(0, 0, 0)
           .addScaledVector(right, -keyboard.x)
@@ -111,6 +111,10 @@ class Player extends Group {
       );
       this.updateMatrixWorld();
     }
+    position.x = MathUtils.damp(position.x, targetPosition.x, 10, animation.delta);
+    position.y = MathUtils.damp(position.y, targetPosition.y, 10, animation.delta);
+    position.z = MathUtils.damp(position.z, targetPosition.z, 10, animation.delta);
+    this.updateMatrixWorld();
     raycaster.setFromCamera(center, camera);
   }
 
@@ -207,8 +211,8 @@ class Player extends Group {
     if (!isLocked) {
       return;
     }
-    pointer.x += movementX;
-    pointer.y += movementY;
+    pointer.x -= movementX * 0.003;
+    pointer.y -= movementY * 0.003;
   }
 
   onMouseUp({ button }) {

@@ -42,8 +42,8 @@ export default {
             type: 'git',
             url: 'https://github.com/danielesteban/softxels',
           },
-          dependencies: {
-            three: '^0.131.1',
+          peerDependencies: {
+            three: '^0.141.0',
           },
         }, null, '  '));
       },
