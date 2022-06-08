@@ -106,18 +106,18 @@ class Renderer {
 
   static patchFog() {
     ShaderChunk.fog_pars_vertex = ShaderChunk.fog_pars_vertex.replace(
-      'varying float fogDepth;',
-      'varying vec3 fogPosition;'
+      'varying float vFogDepth;',
+      'varying vec3 vFogPosition;'
     );
 
     ShaderChunk.fog_vertex = ShaderChunk.fog_vertex.replace(
-      'fogDepth = - mvPosition.z;',
-      'fogPosition = - mvPosition.xyz;'
+      'vFogDepth = - mvPosition.z;',
+      'vFogPosition = - mvPosition.xyz;'
     );
 
     ShaderChunk.fog_pars_fragment = ShaderChunk.fog_pars_fragment.replace(
-      'varying float fogDepth;',
-      'varying vec3 fogPosition;'
+      'varying float vFogDepth;',
+      'varying vec3 vFogPosition;'
     );
 
     ShaderChunk.fog_fragment = ShaderChunk.fog_fragment
@@ -125,7 +125,7 @@ class Renderer {
         '#ifdef USE_FOG',
         [
           '#ifdef USE_FOG',
-          '  float fogDepth = length(fogPosition);',
+          '  float vFogDepth = length(vFogPosition);',
         ].join('\n')
       );
   }
