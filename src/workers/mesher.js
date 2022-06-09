@@ -30,7 +30,7 @@ const onData = ({ data: { chunks } }) => {
     program.memory.chunks.view.set(chunk, offset);
     offset += chunk.length;
   });
-  // chunks.length = 0;
+  chunks.length = 0;
   const triangles = program.run(
     program.memory.chunks.address,
     program.memory.vertices.address,
