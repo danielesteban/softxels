@@ -24,13 +24,8 @@ const onLoad = ({ data: { options: { chunkSize }, program: module } }) => {
 };
 self.addEventListener('message', onLoad);
 
-const onData = ({ data: { chunks } }) => {
-  let offset = 0;
-  chunks.forEach((chunk) => {
-    program.memory.chunks.view.set(chunk, offset);
-    offset += chunk.length;
-  });
-  chunks.length = 0;
+const onData = ({ data: chunks }) => {
+  program.memory.chunks.view.set(chunks);
   const triangles = program.run(
     program.memory.chunks.address,
     program.memory.vertices.address,
@@ -38,10 +33,10 @@ const onData = ({ data: { chunks } }) => {
     program.chunkSize
   );
   if (triangles === 0) {
-    self.postMessage(false);
+    self.postMessage({ buffer: chunks, data: false }, [chunks.buffer]);
     return;    
   }
   const bounds = program.memory.bounds.view.slice(0);
   const vertices = program.memory.vertices.view.slice(0, triangles * 3 * 9);
-  self.postMessage({ bounds, vertices }, [bounds.buffer, vertices.buffer]);
+  self.postMessage({ buffer: chunks, data: { bounds, vertices } }, [chunks.buffer, bounds.buffer, vertices.buffer]);
 };

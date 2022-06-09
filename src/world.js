@@ -38,6 +38,7 @@ class World extends Group {
     this.storage = storage;
     this.workers = {
       mesher: new Worker({
+        buffer: chunkSize * chunkSize * chunkSize * 4 * 8,
         options: { chunkSize },
         instances: 4,
         program: MesherProgram,
@@ -154,7 +155,7 @@ class World extends Group {
       if (request.abort) {
         return;
       }
-      workers.mesher.run({ chunks: neighbors }).then((geometry) => {
+      workers.mesher.run(neighbors).then((geometry) => {
         if (request.abort) {
           return;
         }

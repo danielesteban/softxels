@@ -1,5 +1,6 @@
 class Worker {
   constructor({
+    buffer,
     instances,
     options,
     program,
@@ -9,19 +10,37 @@ class Worker {
     program().then((program) => {
       this.instances = [...Array(instances)].map(() => {
         const worker = new script();
+        if (buffer) {
+          worker.buffer = new Uint8Array(buffer);
+        }
+        worker.run = ({ operation, resolve }) => {
+          worker.isBusy = true;
+          worker.resolve = resolve;
+          if (buffer) {
+            const stride = operation[0].length;
+            operation.forEach((chunk, i) => {
+              worker.buffer.set(chunk, stride * i)
+            });
+            worker.postMessage(worker.buffer, [worker.buffer.buffer]);
+          } else {
+            worker.postMessage(operation);
+          }
+        };
         const onLoad = () => {
           worker.removeEventListener('message', onLoad);
           worker.addEventListener('message', onData);
         };
         const onData = ({ data }) => {
+          if (buffer) {
+            worker.buffer = data.buffer;
+            data = data.data;
+          }
           const { resolve } = worker;
           delete worker.resolve;
           resolve(data);
           const queued = this.queue.shift();
           if (queued) {
-            const { operation, resolve } = queued;
-            worker.resolve = resolve;
-            worker.postMessage(operation);
+            worker.run(queued);
           } else {
             worker.isBusy = false;
           }
@@ -61,9 +80,7 @@ class Worker {
         queue.push({ operation, resolve });
         return;
       }
-      worker.isBusy = true;
-      worker.resolve = resolve;
-      worker.postMessage(operation);
+      worker.run({ operation, resolve });
     });
   }
 }
