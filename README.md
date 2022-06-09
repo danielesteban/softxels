@@ -21,6 +21,10 @@
   * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
   * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
 
+* react-three-fiber:
+  * Demo: [https://04s6kb.csb.app/](https://04s6kb.csb.app/)
+  * Source: [https://codesandbox.io/s/softxels-04s6kb](https://codesandbox.io/s/softxels-04s6kb)
+
 ### Installation
 
 ```bash
