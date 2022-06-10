@@ -91,11 +91,6 @@ class World extends Group {
     if (loading.has(key)) {
       return;
     }
-    if (!workers.worldgen) {
-      dataChunks.set(key, new Uint8Array(chunkSize * chunkSize * chunkSize * 4));
-      this.loadPendingNeighbors(x, y, z);
-      return;
-    }
     const request = { abort: false };
     loading.set(key, request);
     setImmediate(() => {
@@ -110,7 +105,10 @@ class World extends Group {
           if (stored) {
             return stored;
           }
-          return workers.worldgen.run({ x, y, z });
+          if (workers.worldgen) {
+            return workers.worldgen.run({ x, y, z });
+          }
+          return new Uint8Array(chunkSize * chunkSize * chunkSize * 4);
         })
         .then((data) => {
           if (request.abort) {
