@@ -3,7 +3,7 @@ import instantiate from '../core/program.js';
 let program;
 
 const generators = {
-  default: 0,
+  cave: 0,
   terrain: 1,
 };
 

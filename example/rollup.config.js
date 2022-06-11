@@ -21,10 +21,6 @@ export default {
         entries: { 'softxels': path.join(__dirname, '..', 'dist') },
       }),
     ] : []),
-    resolve({
-      browser: true,
-      moduleDirectories: [path.join(__dirname, 'node_modules')],
-    }),
     copy({
       targets: [
         { src: 'index.*', dest: 'dist' },
@@ -33,6 +29,10 @@ export default {
         { src: 'sounds/*.ogg', dest: 'dist/sounds' },
       ],
       copyOnce: !process.env.ROLLUP_WATCH,
+    }),
+    resolve({
+      browser: true,
+      moduleDirectories: [path.join(__dirname, 'node_modules')],
     }),
     ...(process.env.ROLLUP_WATCH ? [
       serve({

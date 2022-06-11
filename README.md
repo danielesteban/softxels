@@ -7,9 +7,9 @@
 ### Examples
 
 * Editable world:
-  * Demo (default worldgen): [https://softxels.gatunes.com/#/default](https://softxels.gatunes.com/#/default)
+  * Demo (cave worldgen): [https://softxels.gatunes.com/#/cave](https://softxels.gatunes.com/#/cave)
   * Demo (terrain worldgen): [https://softxels.gatunes.com/#/terrain](https://softxels.gatunes.com/#/terrain)
-  * Demo (default worldgen with persistence): [https://softxels.gatunes.com/#/default/persist](https://softxels.gatunes.com/#/default/persist)
+  * Demo (cave worldgen with persistence): [https://softxels.gatunes.com/#/cave/persist](https://softxels.gatunes.com/#/cave/persist)
   * Demo (terrain worldgen with persistence): [https://softxels.gatunes.com/#/terrain/persist](https://softxels.gatunes.com/#/terrain/persist)
   * Source: [example/main.js](example/main.js)
 
@@ -35,11 +35,12 @@ npm install softxels
 
 ```js
 import World from 'softxels';
-import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
 
 const aspect = window.innerWidth / window.innerHeight;
 const camera = new PerspectiveCamera(70, aspect, 0.1, 1000);
 const renderer = new WebGLRenderer({ antialias: true });
+renderer.outputEncoding = sRGBEncoding;
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const scene = new Scene();
@@ -66,7 +67,7 @@ new World({
     async get(key), // An arbitrary async function that receives a chunk key and resolves the chunk data
     set(key, value), // An arbitrary function that receives a chunk key and the data to be stored
   },
-  worldgen: 'default', // 'default', 'terrain' or 'empty'
+  worldgen: 'empty', // 'empty', 'cave' or 'terrain' (default: empty)
 });
 ```
 
@@ -91,7 +92,7 @@ world.updateVolume(
         // 0 === OUTSIDE
         // 0X80 === AT ISOSURFACE
         // 0xFF === INSIDE
-  { r: 0x11, g: 0x22, b: 0x33 } // An optional 24bit RGB color
+  { r: 0x11, g: 0x22, b: 0x33 } // An optional 24bit sRGB color
 );
 ```
 
@@ -104,7 +105,7 @@ To build the C code, you'll need to install LLVM:
  * Linux: [https://releases.llvm.org/download.html](https://releases.llvm.org/download.html)
 
 On the first build, it will complain about a missing file that you can get here:
-[libclang_rt.builtins-wasm32-wasi-12.0.tar.gz](https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/libclang_rt.builtins-wasm32-wasi-12.0.tar.gz). Just put it on the same path that the error specifies and you should be good to go.
+[libclang_rt.builtins-wasm32-wasi-16.0.tar.gz](https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-16/libclang_rt.builtins-wasm32-wasi-16.0.tar.gz). Just put it on the same path that the error specifies and you should be good to go.
 
 To build [wasi-libc](https://github.com/WebAssembly/wasi-libc), you'll need to install [GNU make](https://chocolatey.org/packages/make)
 

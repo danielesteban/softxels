@@ -59,7 +59,7 @@ void run(
       for (int x = chunkX; x < chunkX + chunkSize; x++, i++) {
         switch (generator) {
           default:
-          case 0: // default
+          case 0: // cave
             chunk[i].value = (
               fmin(fabs(fnlGetNoise3D(&noise, x * 1.5f, y * 1.5f, z * 1.5f)) * 384.0f, 255.0f)
             );

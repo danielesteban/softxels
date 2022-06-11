@@ -52,11 +52,11 @@ class Main extends Scene {
     this.player.raycaster.far = chunkSize * 1.5;
     this.add(this.player);
 
-    const worldgen = params[0] === 'default' ? 'default' : 'terrain';
+    const worldgen = params[0] === 'cave' ? 'cave' : 'terrain';
     document.getElementById(`worldgen:${worldgen}`).classList.add('active');
     switch (worldgen) {
       default:
-      case 'default': {
+      case 'cave': {
         this.ambient = 'ambient';
         this.background = new Color(0x0A1A2A);
         const light = new SpotLight(0xFFFFFF, 0.5, 32, Math.PI / 3, 1);

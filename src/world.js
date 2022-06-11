@@ -14,7 +14,7 @@ class World extends Group {
     renderRadius = 5,
     seed = Math.floor(Math.random() * 2147483647),
     storage = null,
-    worldgen = 'default',
+    worldgen = 'empty',
   } = {}) {
     super();
     this.chunkMaterial = chunkMaterial;
@@ -66,7 +66,7 @@ class World extends Group {
   }
 
   reset() {
-    const { anchorChunk, dataChunks, renderChunks, loading } = this;
+    const { anchorChunk, dataChunks, renderChunks, loading, workers } = this;
     anchorChunk.set(Infinity, Infinity, Infinity);
     dataChunks.clear();
     renderChunks.forEach((mesh) => {
@@ -83,6 +83,24 @@ class World extends Group {
       request.abort = true;
     });
     loading.mesh.clear();
+    [workers.mesher, workers.worldgen].forEach((worker) => {
+      if (worker) {
+        worker.queue.length = 0;
+      }
+    });
+  }
+
+  importChunks(buffer) {
+    const { chunkSize, dataChunks } = this;
+    const stride = 6 + chunkSize * chunkSize * chunkSize * 4;
+    this.reset();
+    for (let i = 0; i < buffer.byteLength; i += stride) {
+      const chunk = new Int16Array(buffer.slice(i, i + 6));
+      dataChunks.set(
+        `${chunk[0]}:${chunk[1]}:${chunk[2]}`,
+        new Uint8Array(buffer.slice(i + 6, i + stride))
+      );
+    }
   }
 
   generateChunk(x, y, z) {
