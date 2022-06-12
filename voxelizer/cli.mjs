@@ -96,7 +96,7 @@ const { chunkSize, gain, grid, input, output, resolution, rotateX, rotateY, rota
     alias: 'x',
     type: 'number',
     description: 'Input rotation',
-    default: 0,
+    default: -90,
   })
   .option('rotateY', {
     alias: 'y',

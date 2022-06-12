@@ -2,7 +2,7 @@
   "name": "softxels-voxelizer",
   "author": "Daniel Esteban Nombela",
   "license": "MIT",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": "cli.mjs",
   "module": "module.mjs",
   "homepage": "https://github.com/danielesteban/softxels",
