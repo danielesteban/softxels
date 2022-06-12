@@ -74,7 +74,7 @@ export const voxelize = ({ geometry, gain, grid, resolution }) => {
   });
 };
 
-export const chunk = ({ chunkSize, voxels }) => new Promise((resolve) => {
+export const chunk = ({ metadata: { chunkSize }, voxels }) => new Promise((resolve) => {
   const chunks = new Map();
   const chunk = new Vector3();
   const col = new Color();
@@ -106,26 +106,25 @@ export const chunk = ({ chunkSize, voxels }) => new Promise((resolve) => {
   });
   voxels.clear();
   resolve(chunks);
-});
+}); 
 
-export const pack = ({ chunks, deflate }) => new Promise((resolve, reject) => {
-  let outputBuffer;
-  const count = chunks.size;
-  if (count) {
-    const chunk = new Vector3();
-    const stride = 6 + chunks.values().next().value.length;
-    outputBuffer = new Uint8Array(stride * count);
-    let offset = 0;
-    chunks.forEach((data, key) => {
-      chunk.fromArray(new Int16Array(key.split(':')));
-      outputBuffer.set(new Uint8Array((new Int16Array([chunk.x, chunk.y, chunk.z])).buffer), offset);
-      outputBuffer.set(data, offset + 6);
-      offset += stride;
-    });
-    chunks.clear();
-  } else {
-    outputBuffer = new Uint8Array();
-  }
+export const pack = ({ chunks, deflate, metadata }) => new Promise((resolve, reject) => {
+  const chunk = new Vector3();
+  const meta = Buffer.from(JSON.stringify(metadata));
+  const metaStride = 2 + meta.length;
+  const chunkStride = 6 + metadata.chunkSize * metadata.chunkSize * metadata.chunkSize * 4;
+  const outputBuffer = new Uint8Array(metaStride + chunkStride * chunks.size);
+  outputBuffer.set(new Uint8Array((new Int16Array([meta.length])).buffer), 0);
+  outputBuffer.set(meta, 2);
+  let offset = metaStride;
+  chunks.forEach((data, key) => {
+    chunk.fromArray(new Int16Array(key.split(':')));
+    outputBuffer.set(new Uint8Array((new Int16Array([chunk.x, chunk.y, chunk.z])).buffer), offset);
+    outputBuffer.set(data, offset + 6);
+    offset += chunkStride;
+  });
+  chunks.clear();
+
   if (!deflate) {
     resolve(outputBuffer);
     return;

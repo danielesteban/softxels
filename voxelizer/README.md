@@ -6,7 +6,6 @@ softxels-voxelizer
 npm install -g softxels-voxelizer
 ```
 
-
 ```bash
                   ▄▄▄▄                           ▄▄         
                 ▄█▀ ▀▀ ██                      ▀███         
@@ -21,17 +20,21 @@ Usage:
   softxels-voxelizer -i "input.ply" -o "output.bin"
 
 Options:
-      --help        Show help                                          [boolean]
-      --version     Show version number                                [boolean]
-  -i, --input       Input file                               [string] [required]
-  -o, --output      Output file                              [string] [required]
-  -c, --chunkSize   Chunk size                            [number] [default: 32]
-  -g, --gain        Sample gain                          [number] [default: 1.7]
-  -s, --grid        Sample grid                            [number] [default: 1]
-  -r, --resolution  Resolution                            [number] [default: 10]
-  -x, --rotateX     Input rotation                       [number] [default: -90]
-  -y, --rotateY     Input rotation                         [number] [default: 0]
-  -z, --rotateZ     Input rotation                         [number] [default: 0]
+      --help          Show help                                        [boolean]
+      --version       Show version number                              [boolean]
+  -i, --input         Input file                             [string] [required]
+  -o, --output        Output file                            [string] [required]
+  -c, --chunkSize     Chunk size                          [number] [default: 32]
+  -g, --gain          Sample gain                        [number] [default: 1.7]
+  -s, --grid          Sample grid                          [number] [default: 1]
+  -r, --resolution    Resolution                          [number] [default: 10]
+  -x, --rotateX       Input rotation                     [number] [default: -90]
+  -y, --rotateY       Input rotation                       [number] [default: 0]
+  -z, --rotateZ       Input rotation                       [number] [default: 0]
+  -n, --name          Name (metadata)                                   [string]
+      --renderRadius  Render radius (metadata)            [number] [default: 10]
+      --renderScale   Render scale (metadata)          [number] [default: 0.125]
+      --spawn         Spawn point (metadata)         [string] [default: "0,8,0"]
 ```
 
 ```js

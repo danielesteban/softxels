@@ -53,7 +53,7 @@ console.log(`
 ██████▀ ▀█████▀▄████▄   ▀██████▄   ▄██▄ ▀█████▀▄████▄██████▀
 `);
 
-const { chunkSize, gain, grid, input, output, resolution, rotateX, rotateY, rotateZ } = yargs(process.argv)
+const { chunkSize, gain, grid, input, name, output, renderRadius, renderScale, resolution, rotateX, rotateY, rotateZ, spawn } = yargs(process.argv)
   .scriptName('softxels-voxelizer')
   .usage('Usage:\n  $0 -i "input.ply" -o "output.bin"')
   .option('input', {
@@ -110,7 +110,38 @@ const { chunkSize, gain, grid, input, output, resolution, rotateX, rotateY, rota
     description: 'Input rotation',
     default: 0,
   })
+  .option('name', {
+    alias: 'n',
+    type: 'string',
+    description: 'Name (metadata)',
+  })
+  .option('renderRadius', {
+    type: 'number',
+    description: 'Render radius (metadata)',
+    default: 10,
+  })
+  .option('renderScale', {
+    type: 'number',
+    description: 'Render scale (metadata)',
+    default: 0.125,
+  })
+  .option('spawn', {
+    type: 'string',
+    description: 'Spawn point (metadata)',
+    default: '0,8,0',
+  })
   .parse();
+
+const metadata = {
+  chunkSize,
+  name,
+  render: {
+    radius: renderRadius,
+    scale: renderScale,
+  },
+  spawn: spawn.split(',').map((v) => parseFloat(v)),
+  version: '0.0.1',
+};
 
 const t = 'Total time';
 console.time(t);
@@ -125,10 +156,10 @@ run('Reading input file', () => read(input))()
     ]],
     (geometry) => voxelize({ geometry, gain, grid, resolution })
   ))
-  .then(run('Generating chunk data', (voxels) => chunk({ chunkSize, voxels })))
+  .then(run('Generating chunk data', (voxels) => chunk({ metadata, voxels })))
   .then(run(
     ['Packing %d chunks', (chunks) => [chunks.size]],
-    (chunks) => pack({ chunks, deflate: deflateRaw })
+    (chunks) => pack({ chunks, deflate: deflateRaw, metadata })
   ))
   .then(run('Writing output file', (buffer) => write({ buffer, output })))
   .then(() => {
