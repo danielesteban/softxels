@@ -29,7 +29,7 @@ Options:
   -g, --gain        Sample gain                          [number] [default: 1.7]
   -s, --grid        Sample grid                            [number] [default: 1]
   -r, --resolution  Resolution                            [number] [default: 10]
-  -x, --rotateX     Input rotation                         [number] [default: 0]
+  -x, --rotateX     Input rotation                       [number] [default: -90]
   -y, --rotateY     Input rotation                         [number] [default: 0]
   -z, --rotateZ     Input rotation                         [number] [default: 0]
 ```
