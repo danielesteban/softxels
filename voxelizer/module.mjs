@@ -12,19 +12,18 @@ export const parse = (buffer) => new Promise((resolve) => {
     -geometry.boundingBox.min.z - geometry.boundingBox.size.z * 0.5,
   );
   geometry.rotateX(Math.PI * -0.5);
+  geometry.boundingBox.getSize(geometry.boundingBox.size);
+  geometry.translate(0, geometry.boundingBox.size.y * 0.5, 0);
   resolve(geometry);
 });
 
-export const voxelize = ({ geometry, resolution }) => {
-  const grid = [];
+export const voxelize = ({ geometry, gain, grid, resolution }) => {
+  const samples = [];
   {
-    const s = 2;
-    const c = s * 0.5;
-    const r = Math.sqrt((c ** 2) * 3);
-    for (let z = 0; z < s; z++) {
-      for (let y = 0; y < s; y++) {
-        for (let x = 0; x < s; x++) {
-          grid.push({ offset: new Vector3(x, y, z), value: Math.floor(0xFF - (Math.sqrt((x - c) ** 2 + (y - c) ** 2 + (z - c) ** 2) / r) * 0x9F) });
+    for (let z = -grid; z <= grid; z++) {
+      for (let y = -grid; y <= grid; y++) {
+        for (let x = -grid; x <= grid; x++) {
+          samples.push({ offset: new Vector3(x, y, z), value: (1 - (Math.sqrt(x ** 2 + y ** 2 + z ** 2) / grid) * 0.5) });
         }
       }
     }
@@ -40,11 +39,14 @@ export const voxelize = ({ geometry, resolution }) => {
     for (let i = 0, l = position.count; i < l; i++) {
       col
         .fromBufferAttribute(color, i);
+      if (col.r === 0 && (col.g === 0 || col.g === 1) && col.b === 0) {
+        continue;
+      }
       pos
         .fromBufferAttribute(position, i)
         .multiply(scale)
         .round();
-      grid.forEach(({ offset, value }) => {
+      samples.forEach(({ offset, value }) => {
         vox.copy(pos).add(offset);
         const key = `${vox.x}:${vox.y}:${vox.z}`;
         let data = voxels.get(key);
@@ -53,10 +55,10 @@ export const voxelize = ({ geometry, resolution }) => {
           data.count = 0;
           voxels.set(key, data);
         }
-        data.x += value;
-        data.y += col.r * (value / 0xFF);
-        data.z += col.g * (value / 0xFF);
-        data.w += col.b * (value / 0xFF);
+        data.x += value * gain;
+        data.y += col.r * value;
+        data.z += col.g * value;
+        data.w += col.b * value;
         data.count++;
       });
     }
@@ -68,24 +70,31 @@ export const chunk = ({ chunkSize, voxels }) => new Promise((resolve) => {
   const chunks = new Map();
   const chunk = new Vector3();
   const col = new Color();
-  const vox = new Vector3();
-  voxels.forEach((acc, key) => {
-    vox.fromArray(new Int16Array(key.split(':')));
-    chunk.copy(vox).divideScalar(chunkSize).floor();
+  const pos = new Vector3();
+  voxels.forEach((voxel, key) => {
+    if (voxel.x < 1 || voxel.count < 2) {
+      return;
+    }
+    pos.fromArray(new Int16Array(key.split(':')));
+    chunk.copy(pos).divideScalar(chunkSize).floor();
     const chunkKey = `${chunk.x}:${chunk.y}:${chunk.z}`;
     let data = chunks.get(chunkKey);
     if (!data) {
       data = new Uint8Array(chunkSize * chunkSize * chunkSize * 4);
       chunks.set(chunkKey, data);
     }
-    vox.addScaledVector(chunk, -chunkSize);
-    const index = (vox.z * chunkSize * chunkSize + vox.y * chunkSize + vox.x) * 4;
-    acc.divideScalar(acc.count);
-    col.setRGB(acc.y, acc.z, acc.w).convertLinearToSRGB();
-    acc.y = col.r * 0xFF;
-    acc.z = col.g * 0xFF;
-    acc.w = col.b * 0xFF;
-    data.set(acc.round().toArray(), index);
+    pos.addScaledVector(chunk, -chunkSize);
+    const index = (pos.z * chunkSize * chunkSize + pos.y * chunkSize + pos.x) * 4;
+    col.setRGB(voxel.y / voxel.x, voxel.z / voxel.x, voxel.w / voxel.x).convertLinearToSRGB();
+    data.set(
+      voxel
+        .set(voxel.x / voxel.count, col.r, col.g, col.b)
+        .clampScalar(0, 1)
+        .multiplyScalar(0xFF)
+        .floor()
+        .toArray(),
+      index
+    );
   });
   voxels.clear();
   resolve(chunks);

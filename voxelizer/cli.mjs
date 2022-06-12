@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import Blob from 'fetch-blob';
 import { readFile, writeFile } from 'fs';
-import yargs from 'yargs/yargs';
-import { hideBin } from 'yargs/helpers';
+import yargs from 'yargs';
 import { deflateRaw } from 'zlib';
 import {
   parse,
@@ -43,16 +42,19 @@ const write = ({ buffer, output }) => new Promise((resolve, reject) => (
   })
 ));
 
-const { input, output, chunkSize, resolution } = yargs(hideBin(process.argv))
+const { chunkSize, gain, grid, input, output, resolution } = yargs(process.argv)
+  .usage('Usage: $0 -i "input.ply" -o "output.bin"')
   .option('input', {
     alias: 'i',
     type: 'string',
-    description: 'Input PLY'
+    description: 'Input file',
+    demandOption: 'Input file is required.',
   })
   .option('output', {
     alias: 'o',
     type: 'string',
-    description: 'Output BIN'
+    description: 'Output file',
+    demandOption: 'Output file is required.',
   })
   .option('chunkSize', {
     alias: 'c',
@@ -60,19 +62,25 @@ const { input, output, chunkSize, resolution } = yargs(hideBin(process.argv))
     description: 'Chunk size',
     default: 32,
   })
+  .option('gain', {
+    alias: 'g',
+    type: 'number',
+    description: 'Sample gain',
+    default: 1.7,
+  })
+  .option('grid', {
+    alias: 's',
+    type: 'number',
+    description: 'Sample grid',
+    default: 1,
+  })
   .option('resolution', {
     alias: 'r',
     type: 'number',
     description: 'Resolution',
-    default: 1,
+    default: 10,
   })
   .parse();
-
-if (!input || !output) {
-  console.log('Usage:');
-  console.log('-i "input.ply" -o "output.bin"');
-  process.exit(1);
-}
 
 const t = 'Total time';
 console.time(t);
@@ -85,7 +93,7 @@ run('Reading input file', () => read(input))()
       Math.round(geometry.boundingBox.size.y * resolution),
       Math.round(geometry.boundingBox.size.z * resolution),
     ]],
-    (geometry) => voxelize({ geometry, resolution })
+    (geometry) => voxelize({ geometry, gain, grid, resolution })
   ))
   .then(run('Generating chunk data', (voxels) => chunk({ chunkSize, voxels })))
   .then(run(
