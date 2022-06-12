@@ -53,7 +53,8 @@ console.log(`
 ██████▀ ▀█████▀▄████▄   ▀██████▄   ▄██▄ ▀█████▀▄████▄██████▀
 `);
 
-const { chunkSize, gain, grid, input, output, resolution } = yargs(process.argv)
+const { chunkSize, gain, grid, input, output, resolution, rotateX, rotateY, rotateZ } = yargs(process.argv)
+  .scriptName('softxels-voxelizer')
   .usage('Usage:\n  $0 -i "input.ply" -o "output.bin"')
   .option('input', {
     alias: 'i',
@@ -91,12 +92,30 @@ const { chunkSize, gain, grid, input, output, resolution } = yargs(process.argv)
     description: 'Resolution',
     default: 10,
   })
+  .option('rotateX', {
+    alias: 'x',
+    type: 'number',
+    description: 'Input rotation',
+    default: 0,
+  })
+  .option('rotateY', {
+    alias: 'y',
+    type: 'number',
+    description: 'Input rotation',
+    default: 0,
+  })
+  .option('rotateZ', {
+    alias: 'z',
+    type: 'number',
+    description: 'Input rotation',
+    default: 0,
+  })
   .parse();
 
 const t = 'Total time';
 console.time(t);
 run('Reading input file', () => read(input))()
-  .then(run('Parsing point cloud', parse))
+  .then(run('Parsing point cloud', (buffer) => parse({ buffer, rotateX, rotateY, rotateZ })))
   .then(run(
     ['Merging %s points into voxels\nThe resulting volume will be %dx%dx%d', (geometry) => [
       geometry.getAttribute('position').count.toLocaleString(),

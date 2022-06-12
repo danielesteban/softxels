@@ -1,7 +1,7 @@
-import { Color, Vector3, Vector4 } from 'three';
+import { Color, MathUtils, Vector3, Vector4 } from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 
-export const parse = (buffer) => new Promise((resolve) => {
+export const parse = ({ buffer, rotateX, rotateY, rotateZ }) => new Promise((resolve) => {
   const geometry = (new PLYLoader()).parse(buffer);
   geometry.deleteAttribute('normal');
   geometry.computeBoundingBox();
@@ -11,7 +11,15 @@ export const parse = (buffer) => new Promise((resolve) => {
     -geometry.boundingBox.min.y - geometry.boundingBox.size.y * 0.5,
     -geometry.boundingBox.min.z - geometry.boundingBox.size.z * 0.5,
   );
-  geometry.rotateX(Math.PI * -0.5);
+  if (rotateX) {
+    geometry.rotateX(MathUtils.degToRad(rotateX));
+  }
+  if (rotateY) {
+    geometry.rotateY(MathUtils.degToRad(rotateY));
+  }
+  if (rotateZ) {
+    geometry.rotateZ(MathUtils.degToRad(rotateZ));
+  }
   geometry.boundingBox.getSize(geometry.boundingBox.size);
   geometry.translate(0, geometry.boundingBox.size.y * 0.5, 0);
   resolve(geometry);

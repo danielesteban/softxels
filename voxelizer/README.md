@@ -3,6 +3,11 @@ softxels-voxelizer
 ==
 
 ```bash
+npm install -g softxels-voxelizer
+```
+
+
+```bash
                   ▄▄▄▄                           ▄▄         
                 ▄█▀ ▀▀ ██                      ▀███         
                 ██▀    ██                        ██         
@@ -13,18 +18,21 @@ softxels-voxelizer
 ██████▀ ▀█████▀▄████▄   ▀██████▄   ▄██▄ ▀█████▀▄████▄██████▀
 
 Usage:
-  node voxelizer/cli.mjs -i "input.ply" -o "output.bin"
+  softxels-voxelizer -i "input.ply" -o "output.bin"
 
 Options:
+      --help        Show help                                          [boolean]
+      --version     Show version number                                [boolean]
   -i, --input       Input file                               [string] [required]
   -o, --output      Output file                              [string] [required]
   -c, --chunkSize   Chunk size                            [number] [default: 32]
   -g, --gain        Sample gain                          [number] [default: 1.7]
   -s, --grid        Sample grid                            [number] [default: 1]
   -r, --resolution  Resolution                            [number] [default: 10]
+  -x, --rotateX     Input rotation                         [number] [default: 0]
+  -y, --rotateY     Input rotation                         [number] [default: 0]
+  -z, --rotateZ     Input rotation                         [number] [default: 0]
 ```
-
-### Basic usage
 
 ```js
 import { inflate } from 'fflate';
@@ -49,8 +57,8 @@ fetch('./output.bin')
       else resolve(inflated.buffer);
     })
   )))
-  .then((buffer) => world.importChunks(buffer))
-  .then(() => {
+  .then((buffer) => {
+    world.importChunks(buffer);
     renderer.setAnimationLoop(() => {
       world.updateChunks(camera.position);
       renderer.render(scene, camera);
