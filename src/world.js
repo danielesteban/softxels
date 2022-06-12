@@ -14,7 +14,7 @@ class World extends Group {
     renderRadius = 5,
     seed = Math.floor(Math.random() * 2147483647),
     storage = null,
-    worldgen = 'empty',
+    worldgen = null,
   } = {}) {
     super();
     this.chunkMaterial = chunkMaterial;
@@ -44,7 +44,7 @@ class World extends Group {
         program: MesherProgram,
         script: MesherWorker,
       }),
-      ...(worldgen !== 'empty' ? {
+      ...(worldgen ? {
         worldgen: new Worker({
           options: { chunkSize, generator: worldgen, seed },
           instances: 4,

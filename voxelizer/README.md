@@ -1,6 +1,28 @@
+### CLI
+
 ```bash
-./cli.mjs -i input.ply -o output.bin
+                  ▄▄▄▄                           ▄▄         
+                ▄█▀ ▀▀ ██                      ▀███         
+                ██▀    ██                        ██         
+▄██▀███ ▄██▀██▄ █████ ██████▀██▀   ▀██▀ ▄▄█▀██   ██  ▄██▀███
+██   ▀▀██▀   ▀██ ██     ██    ▀██ ▄█▀  ▄█▀   ██  ██  ██   ▀▀
+▀█████▄██     ██ ██     ██      ███    ██▀▀▀▀▀▀  ██  ▀█████▄
+█▄   ████▄   ▄██ ██     ██    ▄█▀ ██▄  ██▄    ▄  ██  █▄   ██
+██████▀ ▀█████▀▄████▄   ▀██████▄   ▄██▄ ▀█████▀▄████▄██████▀
+
+Usage:
+  node voxelizer/cli.mjs -i "input.ply" -o "output.bin"
+
+Options:
+  -i, --input       Input file                               [string] [required]
+  -o, --output      Output file                              [string] [required]
+  -c, --chunkSize   Chunk size                            [number] [default: 32]
+  -g, --gain        Sample gain                          [number] [default: 1.7]
+  -s, --grid        Sample grid                            [number] [default: 1]
+  -r, --resolution  Resolution                            [number] [default: 10]
 ```
+
+### Basic usage
 
 ```js
 import { inflate } from 'fflate';

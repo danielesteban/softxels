@@ -42,8 +42,19 @@ const write = ({ buffer, output }) => new Promise((resolve, reject) => (
   })
 ));
 
+console.log(`
+                  ▄▄▄▄                           ▄▄         
+                ▄█▀ ▀▀ ██                      ▀███         
+                ██▀    ██                        ██         
+▄██▀███ ▄██▀██▄ █████ ██████▀██▀   ▀██▀ ▄▄█▀██   ██  ▄██▀███
+██   ▀▀██▀   ▀██ ██     ██    ▀██ ▄█▀  ▄█▀   ██  ██  ██   ▀▀
+▀█████▄██     ██ ██     ██      ███    ██▀▀▀▀▀▀  ██  ▀█████▄
+█▄   ████▄   ▄██ ██     ██    ▄█▀ ██▄  ██▄    ▄  ██  █▄   ██
+██████▀ ▀█████▀▄████▄   ▀██████▄   ▄██▄ ▀█████▀▄████▄██████▀
+`);
+
 const { chunkSize, gain, grid, input, output, resolution } = yargs(process.argv)
-  .usage('Usage: $0 -i "input.ply" -o "output.bin"')
+  .usage('Usage:\n  $0 -i "input.ply" -o "output.bin"')
   .option('input', {
     alias: 'i',
     type: 'string',

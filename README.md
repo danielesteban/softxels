@@ -67,7 +67,7 @@ new World({
     async get(key), // An arbitrary async function that receives a chunk key and resolves the chunk data
     set(key, value), // An arbitrary function that receives a chunk key and the data to be stored
   },
-  worldgen: 'empty', // 'empty', 'cave' or 'terrain' (default: empty)
+  worldgen: null, // 'cave', 'terrain' or null to disable it (default: null)
 });
 ```
 
