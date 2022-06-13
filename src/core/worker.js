@@ -1,14 +1,14 @@
 class Worker {
   constructor({
     buffer,
-    instances = Math.max(navigator.hardwareConcurrency || 0, 4),
+    concurrency = Math.max(navigator.hardwareConcurrency || 0, 4),
     options,
     program,
     script,
   }) {
     this.queue = [];
     program().then((program) => {
-      this.instances = [...Array(instances)].map(() => {
+      this.instances = Array.from({ length: concurrency }, () => {
         const worker = new script();
         if (buffer) {
           worker.buffer = new Uint8Array(buffer);
@@ -50,7 +50,7 @@ class Worker {
         return worker;
       });
       if (this.queue.length) {
-        this.queue.splice(0, instances).forEach(({ operation, resolve }) => (
+        this.queue.splice(0, concurrency).forEach(({ operation, resolve }) => (
           this.run(operation).then(resolve)
         ));
       }
