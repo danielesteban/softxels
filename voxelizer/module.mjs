@@ -114,7 +114,7 @@ export const chunk = ({ metadata: { chunkSize }, voxels }) => new Promise((resol
 
 export const pack = ({ chunks, deflate, metadata }) => new Promise((resolve, reject) => {
   const chunk = new Vector3();
-  const meta = Buffer.from(JSON.stringify(metadata));
+  const meta = (new TextEncoder()).encode(JSON.stringify(metadata));
   const metaStride = 2 + meta.length;
   const chunkStride = 6 + metadata.chunkSize * metadata.chunkSize * metadata.chunkSize * 4;
   const outputBuffer = new Uint8Array(metaStride + chunkStride * chunks.size);
