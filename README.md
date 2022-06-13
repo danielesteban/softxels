@@ -1,8 +1,8 @@
-[softxels](https://softxels.gatunes.com/)
+[softxels](https://github.com/danielesteban/softxels/)
 [![npm-version](https://img.shields.io/npm/v/softxels.svg)](https://www.npmjs.com/package/softxels)
 ==
 
-[![screenshot](example/screenshot.png)](https://softxels.gatunes.com/)
+[![screenshot](screenshot.png)](https://github.com/danielesteban/softxels)
 
 ### Examples
 
@@ -13,17 +13,19 @@
   * Demo (terrain worldgen with persistence): [https://softxels.gatunes.com/#/terrain/persist](https://softxels.gatunes.com/#/terrain/persist)
   * Source: [example/main.js](example/main.js)
 
-* VR sculpting:
-  * Demo [https://softxels-xr.glitch.me/](https://softxels-xr.glitch.me/)
-  * Source: [https://glitch.com/edit/#!/softxels-xr](https://glitch.com/edit/#!/softxels-xr)
-
 * Random walkers:
-  * Demo: [https://softxels-walker.glitch.me/](https://softxels-walker.glitch.me/)
+  * Demo: [https://softxels-walker.glitch.me](https://softxels-walker.glitch.me)
   * Source: [https://glitch.com/edit/#!/softxels-walker](https://glitch.com/edit/#!/softxels-walker)
+  * Demo (react-three-fiber): [https://04s6kb.csb.app](https://04s6kb.csb.app)
+  * Source (react-three-fiber): [https://codesandbox.io/s/softxels-04s6kb](https://codesandbox.io/s/softxels-04s6kb)
 
-* react-three-fiber:
-  * Demo: [https://04s6kb.csb.app/](https://04s6kb.csb.app/)
-  * Source: [https://codesandbox.io/s/softxels-04s6kb](https://codesandbox.io/s/softxels-04s6kb)
+* Viewer:
+  * Demo: [https://softxels-viewer.gatunes.com](https://softxels-viewer.gatunes.com)
+  * Source: [https://github.com/danielesteban/softxels-viewer](https://github.com/danielesteban/softxels-viewer)
+
+* VR sculpting:
+  * Demo [https://softxels-xr.glitch.me](https://softxels-xr.glitch.me)
+  * Source: [https://glitch.com/edit/#!/softxels-xr](https://glitch.com/edit/#!/softxels-xr)
 
 ### Installation
 
