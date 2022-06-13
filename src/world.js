@@ -4,26 +4,22 @@ import Worker from './core/worker.js';
 import { setImmediate } from './core/setimmediate.js';
 import MesherProgram from './workers/mesher.wasm';
 import MesherWorker from 'web-worker:./workers/mesher.js';
-import WorldGenProgram from './workers/worldgen.wasm';
-import WorldGenWorker from 'web-worker:./workers/worldgen.js';
+
+const _chunk = new Vector3();
+const _origin = new Vector3();
+const _voxel = new Vector3();
 
 class World extends Group {
   constructor({
     chunkMaterial = null,
     chunkSize = 32,
     renderRadius = 5,
-    seed = Math.floor(Math.random() * 2147483647),
     storage = null,
     worldgen = null,
   } = {}) {
     super();
     this.chunkMaterial = chunkMaterial;
     this.chunkSize = chunkSize;
-    this.aux = {
-      chunk: new Vector3(),
-      origin: new Vector3(),
-      voxel: new Vector3(),
-    };
     this.anchorChunk = new Vector3(Infinity, Infinity, Infinity);
     this.dataChunks = new Map();
     this.renderChunks = new Map();
@@ -40,18 +36,10 @@ class World extends Group {
       mesher: new Worker({
         buffer: chunkSize * chunkSize * chunkSize * 4 * 8,
         options: { chunkSize },
-        instances: 4,
         program: MesherProgram,
         script: MesherWorker,
       }),
-      ...(worldgen ? {
-        worldgen: new Worker({
-          options: { chunkSize, generator: worldgen, seed },
-          instances: 4,
-          program: WorldGenProgram,
-          script: WorldGenWorker,
-        }),
-      } : {})
+      ...(worldgen ? { worldgen: worldgen(chunkSize) } : {})
     };
   }
 
@@ -240,12 +228,12 @@ class World extends Group {
   }
 
   updateChunks(anchor) {
-    const { aux: { chunk }, anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
-    this.worldToLocal(chunk.copy(anchor)).divideScalar(chunkSize).floor();
-    if (anchorChunk.equals(chunk)) {
+    const { anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
+    this.worldToLocal(_chunk.copy(anchor)).divideScalar(chunkSize).floor();
+    if (anchorChunk.equals(_chunk)) {
       return;
     }
-    anchorChunk.copy(chunk);
+    anchorChunk.copy(_chunk);
     const maxDistance = renderRadius * 1.25;
     renderChunks.forEach((mesh, key) => {
       if (
@@ -257,54 +245,54 @@ class World extends Group {
       }
     });
     renderGrid.forEach((offset) => {
-      chunk.addVectors(anchorChunk, offset);
-      const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
+      _chunk.addVectors(anchorChunk, offset);
+      const key = `${_chunk.x}:${_chunk.y}:${_chunk.z}`;
       if (!renderChunks.has(key)) {
-        this.loadChunk(chunk.x, chunk.y, chunk.z);
+        this.loadChunk(_chunk.x, _chunk.y, _chunk.z);
       }
     });
   }
 
   updateVolume(point, radius, value, color) {
-    const { aux: { chunk, origin, voxel }, chunkSize, dataChunks, loading: { mesh: loading } } = this;
-    this.worldToLocal(origin.copy(point)).floor();
+    const { chunkSize, dataChunks, loading: { mesh: loading } } = this;
+    this.worldToLocal(_origin.copy(point)).floor();
     const affected = new Map();
     World.getBrush(radius).forEach((offset) => {
-      voxel.addVectors(origin, offset);
-      chunk.copy(voxel).divideScalar(chunkSize).floor();
-      voxel.addScaledVector(chunk, -chunkSize).floor();
-      const key = `${chunk.x}:${chunk.y}:${chunk.z}`;
+      _voxel.addVectors(_origin, offset);
+      _chunk.copy(_voxel).divideScalar(chunkSize).floor();
+      _voxel.addScaledVector(_chunk, -chunkSize).floor();
+      const key = `${_chunk.x}:${_chunk.y}:${_chunk.z}`;
       const data = dataChunks.get(key);
       if (data) {
         const index = (
-          (voxel.z * chunkSize * chunkSize + voxel.y * chunkSize + voxel.x) * 4
+          (_voxel.z * chunkSize * chunkSize + _voxel.y * chunkSize + _voxel.x) * 4
         );
         data[index] = value;
         if (color) {
           data.set([color.r, color.g, color.b], index + 1);
         }
-        this.saveChunk(chunk.x, chunk.y, chunk.z);
+        this.saveChunk(_chunk.x, _chunk.y, _chunk.z);
         affected.set(key, true);
-        if (voxel.x === 0) {
-          affected.set(`${chunk.x - 1}:${chunk.y}:${chunk.z}`, true);
+        if (_voxel.x === 0) {
+          affected.set(`${_chunk.x - 1}:${_chunk.y}:${_chunk.z}`, true);
         }
-        if (voxel.y === 0) {
-          affected.set(`${chunk.x}:${chunk.y - 1}:${chunk.z}`, true);
+        if (_voxel.y === 0) {
+          affected.set(`${_chunk.x}:${_chunk.y - 1}:${_chunk.z}`, true);
         }
-        if (voxel.z === 0) {
-          affected.set(`${chunk.x}:${chunk.y}:${chunk.z - 1}`, true);
+        if (_voxel.z === 0) {
+          affected.set(`${_chunk.x}:${_chunk.y}:${_chunk.z - 1}`, true);
         }
-        if (voxel.x === 0 && voxel.y === 0 && voxel.z === 0) {
-          affected.set(`${chunk.x - 1}:${chunk.y - 1}:${chunk.z - 1}`, true);
+        if (_voxel.x === 0 && _voxel.y === 0 && _voxel.z === 0) {
+          affected.set(`${_chunk.x - 1}:${_chunk.y - 1}:${_chunk.z - 1}`, true);
         }
-        if (voxel.x === 0 && voxel.y === 0) {
-          affected.set(`${chunk.x - 1}:${chunk.y - 1}:${chunk.z}`, true);
+        if (_voxel.x === 0 && _voxel.y === 0) {
+          affected.set(`${_chunk.x - 1}:${_chunk.y - 1}:${_chunk.z}`, true);
         }
-        if (voxel.y === 0 && voxel.z === 0) {
-          affected.set(`${chunk.x}:${chunk.y - 1}:${chunk.z - 1}`, true);
+        if (_voxel.y === 0 && _voxel.z === 0) {
+          affected.set(`${_chunk.x}:${_chunk.y - 1}:${_chunk.z - 1}`, true);
         }
-        if (voxel.x === 0 && voxel.z === 0) {
-          affected.set(`${chunk.x - 1}:${chunk.y}:${chunk.z - 1}`, true);
+        if (_voxel.x === 0 && _voxel.z === 0) {
+          affected.set(`${_chunk.x - 1}:${_chunk.y}:${_chunk.z - 1}`, true);
         }
       }
     });

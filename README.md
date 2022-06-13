@@ -34,7 +34,7 @@ npm install softxels
 ### Basic usage
 
 ```js
-import World from 'softxels';
+import World, { WorldGen } from 'softxels';
 import { PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
 
 const aspect = window.innerWidth / window.innerHeight;
@@ -44,7 +44,7 @@ renderer.outputEncoding = sRGBEncoding;
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const scene = new Scene();
-const world = new World();
+const world = new World(WorldGen());
 scene.add(world);
 
 renderer.setAnimationLoop(() => {
@@ -54,6 +54,7 @@ renderer.setAnimationLoop(() => {
 ```
 
 ### World constructor
+
 ```js
 new World({
   chunkMaterial: MeshBasicMaterial({ // A ThreeJS Material instance to render all chunks (default: null)
@@ -61,17 +62,25 @@ new World({
   }),
   chunkSize: 32, // An uInt8 that controls the data/render chunks size (default: 32)
   renderRadius: 5, // Controls the chunk radius updateChunks loads around the anchor (default: 5)
-  seed: 1337, // A uInt32 seed to drive the world generation noise (default: Random)
   storage: { // An optional interface to load/store the chunk data
     saveInterval: 5000, // The minimum time in between chunk saves in ms (default: 0)
     async get(key), // An arbitrary async function that receives a chunk key and resolves the chunk data
     set(key, value), // An arbitrary function that receives a chunk key and the data to be stored
   },
-  worldgen: null, // 'cave', 'terrain' or null to disable it (default: null)
+});
+```
+
+### WorldGen constructor
+
+```js
+new WorldGen({
+  generator: null, // 'cave', 'terrain' or null to disable it (default: null)
+  seed: 1337, // A uInt32 seed to drive the world generation noise (default: Random)
 });
 ```
 
 ### updateChunks
+
 ```js
 // This will load all the chunks around the anchor in the selected renderRadius
 // passed to the constructor.
@@ -84,6 +93,7 @@ world.updateChunks(anchor);
 ```
 
 ### updateVolume
+
 ```js
 world.updateVolume(
   new Vector3(1, 2, 3), // A point in worldspace

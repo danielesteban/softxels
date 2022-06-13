@@ -13,7 +13,7 @@ import {
 import { CSM } from 'three/examples/jsm/csm/CSM.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import World from 'softxels';
+import World, { WorldGen } from 'softxels';
 import Fish from './core/fish.js';
 import Player from './core/player.js';
 import Renderer from './core/renderer.js';
@@ -89,10 +89,14 @@ class Main extends Scene {
     this.world = new World({
       chunkMaterial,
       chunkSize,
-      worldgen,
+      worldgen: WorldGen({
+        generator: worldgen,
+        ...(params.includes('persist') ? {
+          // Set a fixed seed so the generation is the same across reloads
+          seed: 1337,
+        } : {}),
+      }),
       ...(params.includes('persist') ? {
-        // Set a fixed seed so the generation is the same across reloads
-        seed: 1337,
         // Persist volume changes to localStorage
         storage: {
           saveInterval: 5000,

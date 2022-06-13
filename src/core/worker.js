@@ -1,7 +1,7 @@
 class Worker {
   constructor({
     buffer,
-    instances,
+    instances = Math.min(navigator.hardwareConcurrency, 4),
     options,
     program,
     script,
