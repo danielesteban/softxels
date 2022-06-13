@@ -136,7 +136,7 @@ const metadata = {
 const t = 'Total time';
 console.time(t);
 run('Reading input file', () => read(input))()
-  .then(run('Parsing point cloud', (buffer) => parse({ buffer, rotateX, rotateY, rotateZ })))
+  .then(run('Parsing point cloud', (buffer) => parse({ buffer, ground: true, rotateX, rotateY, rotateZ })))
   .then(run(
     ['Merging %s points into voxels\nThe resulting volume will be %dx%dx%d', (geometry) => [
       geometry.getAttribute('position').count.toLocaleString(),
