@@ -68,69 +68,59 @@ const { author, chunkSize, gain, grid, input, name, output, resolution, rotateX,
     description: 'Output file',
     demandOption: 'Output file is required.',
   })
-  .option('chunkSize', {
-    alias: 'c',
-    type: 'number',
-    description: 'Chunk size',
-    default: 32,
-  })
-  .option('gain', {
-    alias: 'g',
-    type: 'number',
-    description: 'Sample gain',
-    default: 1.7,
-  })
-  .option('grid', {
-    alias: 's',
-    type: 'number',
-    description: 'Sample grid',
-    default: 1,
-  })
   .option('resolution', {
     alias: 'r',
     type: 'number',
     description: 'Resolution',
     default: 10,
   })
-  .option('rotateX', {
-    alias: 'x',
-    type: 'number',
-    description: 'Input rotation',
-    default: -90,
-  })
-  .option('rotateY', {
-    alias: 'y',
-    type: 'number',
-    description: 'Input rotation',
-    default: 0,
-  })
-  .option('rotateZ', {
-    alias: 'z',
-    type: 'number',
-    description: 'Input rotation',
-    default: 0,
-  })
   .option('author', {
-    alias: 'a',
     type: 'string',
     description: 'Author (metadata)',
   })
   .option('name', {
-    alias: 'n',
     type: 'string',
     description: 'Name (metadata)',
   })
   .option('scale', {
-    alias: 's',
     type: 'number',
     description: 'Render scale (metadata)',
     default: 0.125,
   })
   .option('spawn', {
-    alias: 'p',
     type: 'string',
     description: 'Spawn point (metadata)',
     default: '0,8,0',
+  })
+  .option('rotateX', {
+    type: 'number',
+    description: 'Input rotation',
+    default: -90,
+  })
+  .option('rotateY', {
+    type: 'number',
+    description: 'Input rotation',
+    default: 0,
+  })
+  .option('rotateZ', {
+    type: 'number',
+    description: 'Input rotation',
+    default: 0,
+  })
+  .option('chunkSize', {
+    type: 'number',
+    description: 'Chunk size',
+    default: 32,
+  })
+  .option('gain', {
+    type: 'number',
+    description: 'Sample gain',
+    default: 1.7,
+  })
+  .option('grid', {
+    type: 'number',
+    description: 'Sample grid',
+    default: 1,
   })
   .parse();
 
