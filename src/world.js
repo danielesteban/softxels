@@ -92,7 +92,7 @@ class World extends Group {
 
   importChunks(buffer, autoUpdateScale = true) {
     const { chunkSize, dataChunks } = this;
-    const [metadataLength] = new Int16Array(buffer.slice(0, 2));
+    const [metadataLength] = new Uint16Array(buffer.slice(0, 2));
     const metadata = JSON.parse((new TextDecoder()).decode(buffer.slice(2, 2 + metadataLength)));
     const stride = 6 + chunkSize * chunkSize * chunkSize * 4;
     this.reset();

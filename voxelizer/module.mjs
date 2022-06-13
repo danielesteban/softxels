@@ -114,7 +114,7 @@ export const pack = ({ chunks, deflate, metadata }) => new Promise((resolve, rej
   const metaStride = 2 + meta.length;
   const chunkStride = 6 + metadata.chunkSize * metadata.chunkSize * metadata.chunkSize * 4;
   const outputBuffer = new Uint8Array(metaStride + chunkStride * chunks.size);
-  outputBuffer.set(new Uint8Array((new Int16Array([meta.length])).buffer), 0);
+  outputBuffer.set(new Uint8Array((new Uint16Array([meta.length])).buffer), 0);
   outputBuffer.set(meta, 2);
   let offset = metaStride;
   chunks.forEach((data, key) => {
