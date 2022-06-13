@@ -53,7 +53,7 @@ console.log(`
 ██████▀ ▀█████▀▄████▄   ▀██████▄   ▄██▄ ▀█████▀▄████▄██████▀
 `);
 
-const { chunkSize, gain, grid, input, name, output, renderRadius, renderScale, resolution, rotateX, rotateY, rotateZ, spawn } = yargs(process.argv)
+const { author, chunkSize, gain, grid, input, name, output, resolution, rotateX, rotateY, rotateZ, scale, spawn } = yargs(process.argv)
   .scriptName('softxels-voxelizer')
   .usage('Usage:\n  $0 -i "input.ply" -o "output.bin"')
   .option('input', {
@@ -110,22 +110,24 @@ const { chunkSize, gain, grid, input, name, output, renderRadius, renderScale, r
     description: 'Input rotation',
     default: 0,
   })
+  .option('author', {
+    alias: 'a',
+    type: 'string',
+    description: 'Author (metadata)',
+  })
   .option('name', {
     alias: 'n',
     type: 'string',
     description: 'Name (metadata)',
   })
-  .option('renderRadius', {
-    type: 'number',
-    description: 'Render radius (metadata)',
-    default: 10,
-  })
-  .option('renderScale', {
+  .option('scale', {
+    alias: 's',
     type: 'number',
     description: 'Render scale (metadata)',
     default: 0.125,
   })
   .option('spawn', {
+    alias: 'p',
     type: 'string',
     description: 'Spawn point (metadata)',
     default: '0,8,0',
@@ -133,12 +135,10 @@ const { chunkSize, gain, grid, input, name, output, renderRadius, renderScale, r
   .parse();
 
 const metadata = {
+  author,
   chunkSize,
   name,
-  render: {
-    radius: renderRadius,
-    scale: renderScale,
-  },
+  scale,
   spawn: spawn.split(',').map((v) => parseFloat(v)),
   version: '0.0.1',
 };

@@ -90,7 +90,7 @@ class World extends Group {
     });
   }
 
-  importChunks(buffer) {
+  importChunks(buffer, autoUpdateScale = true) {
     const { chunkSize, dataChunks } = this;
     const [metadataLength] = new Int16Array(buffer.slice(0, 2));
     const metadata = JSON.parse((new TextDecoder()).decode(buffer.slice(2, 2 + metadataLength)));
@@ -109,10 +109,10 @@ class World extends Group {
         new Uint8Array(buffer.slice(i + 6, i + stride))
       );
     }
-    this.renderRadius = metadata.render.radius;
-    this.renderGrid = World.getRenderGrid(metadata.render.radius);
-    this.scale.setScalar(metadata.render.scale);
-    this.updateMatrixWorld();
+    if (autoUpdateScale) {
+      this.scale.setScalar(metadata.scale);
+      this.updateMatrixWorld();
+    }
     return metadata;
   }
 
