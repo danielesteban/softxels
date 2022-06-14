@@ -42,7 +42,6 @@ export const voxelize = ({ geometry, gain, grid, resolution }) => {
   }
   const color = geometry.getAttribute('color');
   const position = geometry.getAttribute('position');
-  const scale = new Vector3(-resolution, resolution, -resolution);
   const voxels = new Map();
   const col = new Color();
   const pos = new Vector3();
@@ -56,7 +55,7 @@ export const voxelize = ({ geometry, gain, grid, resolution }) => {
       }
       pos
         .fromBufferAttribute(position, i)
-        .multiply(scale)
+        .multiplyScalar(resolution)
         .round();
       samples.forEach(({ offset, value }) => {
         vox.copy(pos).add(offset);
