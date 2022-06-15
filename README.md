@@ -19,6 +19,10 @@
   * Demo (react-three-fiber): [https://04s6kb.csb.app](https://04s6kb.csb.app)
   * Source (react-three-fiber): [https://codesandbox.io/s/softxels-04s6kb](https://codesandbox.io/s/softxels-04s6kb)
 
+* Studio:
+  * Demo: [https://softxels-studio.gatunes.com](https://softxels-studio.gatunes.com)
+  * Source: [https://github.com/danielesteban/softxels-studio](https://github.com/danielesteban/softxels-studio)
+
 * Viewer:
   * Demo: [https://softxels-viewer.gatunes.com](https://softxels-viewer.gatunes.com)
   * Source: [https://github.com/danielesteban/softxels-viewer](https://github.com/danielesteban/softxels-viewer)
