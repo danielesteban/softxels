@@ -57,11 +57,14 @@ class World extends Group {
     const { anchorChunk, dataChunks, renderChunks, loading, workers } = this;
     anchorChunk.set(Infinity, Infinity, Infinity);
     dataChunks.clear();
-    renderChunks.forEach((mesh) => {
-      mesh.dispose();
-      this.remove(mesh);
-    });
-    renderChunks.clear();
+    if (renderChunks.size) {
+      renderChunks.forEach((mesh) => {
+        mesh.dispose();
+        this.remove(mesh);
+      });
+      renderChunks.clear();
+      this.dispatchEvent({ type: 'update' });
+    }
     loading.data.forEach((request) => {
       request.abort = true;
     });
@@ -150,18 +153,16 @@ class World extends Group {
         if (request.abort) {
           return;
         }
+        loading.mesh.delete(key);
         const current = renderChunks.get(key);
-        if (!geometry) {
-          if (current) {
+        if (current) {
+          if (geometry) {
+            current.update(geometry);
+          } else {
             current.dispose();
             this.remove(current);
           }
-          return;
-        }
-        loading.mesh.delete(key);
-        if (current) {
-          current.update(geometry);
-        } else {
+        } else if (geometry) {
           const chunk = new Chunk({
             chunkMaterial,
             chunkSize,
@@ -170,7 +171,8 @@ class World extends Group {
           });
           this.add(chunk);
           renderChunks.set(key, chunk);
-        }        
+        }
+        this.dispatchEvent({ type: 'update' });
       });
     });
   }
