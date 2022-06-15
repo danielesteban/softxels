@@ -61,7 +61,7 @@ fetch('./output.bin')
     })
   )))
   .then((buffer) => {
-    world.importChunks(buffer);
+    world.importChunks(buffer, false);
     renderer.setAnimationLoop(() => {
       world.updateChunks(camera.position);
       renderer.render(scene, camera);

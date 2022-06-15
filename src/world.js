@@ -78,32 +78,6 @@ class World extends Group {
     });
   }
 
-  importChunks(buffer, autoUpdateScale = true) {
-    const { chunkSize, dataChunks } = this;
-    const [metadataLength] = new Uint16Array(buffer.slice(0, 2));
-    const metadata = JSON.parse((new TextDecoder()).decode(buffer.slice(2, 2 + metadataLength)));
-    const stride = 6 + chunkSize * chunkSize * chunkSize * 4;
-    this.reset();
-    if (metadata.chunkSize !== chunkSize) {
-      // @incomplete: Support swapping the chunkSize on the fly
-      //              This will require refactoring the worker startup
-      //              so it can be call again from here
-      throw new Error('World chunkSize is: ${chunkSize} but imported chunkSize is: ${metadata.chunkSize}. They need to match.');
-    }
-    for (let i = 2 + metadataLength; i < buffer.byteLength; i += stride) {
-      const chunk = new Int16Array(buffer.slice(i, i + 6));
-      dataChunks.set(
-        `${chunk[0]}:${chunk[1]}:${chunk[2]}`,
-        new Uint8Array(buffer.slice(i + 6, i + stride))
-      );
-    }
-    if (autoUpdateScale) {
-      this.scale.setScalar(metadata.scale);
-      this.updateMatrixWorld();
-    }
-    return metadata;
-  }
-
   generateChunk(x, y, z) {
     const { chunkSize, dataChunks, loading: { data: loading }, storage, workers } = this;
     const key = `${x}:${y}:${z}`;
@@ -227,6 +201,35 @@ class World extends Group {
     }, storage.saveInterval || 0);
   }
 
+  importChunks(buffer, autoUpdateChunks = true, autoUpdateScale = true) {
+    const { chunkSize, dataChunks } = this;
+    const [metadataLength] = new Uint16Array(buffer.slice(0, 2));
+    const metadata = JSON.parse((new TextDecoder()).decode(buffer.slice(2, 2 + metadataLength)));
+    const stride = 6 + chunkSize * chunkSize * chunkSize * 4;
+    if (metadata.chunkSize !== chunkSize) {
+      // @incomplete: Support swapping the chunkSize on the fly
+      //              This will require refactoring the worker startup
+      //              so it can be call again from here
+      throw new Error('World chunkSize is: ${chunkSize} but imported chunkSize is: ${metadata.chunkSize}. They need to match.');
+    }
+    this.reset();
+    for (let i = 2 + metadataLength; i < buffer.byteLength; i += stride) {
+      const chunk = new Int16Array(buffer.slice(i, i + 6));
+      dataChunks.set(
+        `${chunk[0]}:${chunk[1]}:${chunk[2]}`,
+        new Uint8Array(buffer.slice(i + 6, i + stride))
+      );
+    }
+    if (autoUpdateChunks) {
+      this.updateLoadedChunks();
+    }
+    if (autoUpdateScale) {
+      this.scale.setScalar(metadata.scale);
+      this.updateMatrixWorld();
+    }
+    return metadata;
+  }
+
   updateChunks(anchor) {
     const { anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(_chunk.copy(anchor)).divideScalar(chunkSize).floor();
@@ -249,6 +252,16 @@ class World extends Group {
       const key = `${_chunk.x}:${_chunk.y}:${_chunk.z}`;
       if (!renderChunks.has(key)) {
         this.loadChunk(_chunk.x, _chunk.y, _chunk.z);
+      }
+    });
+  }
+
+  updateLoadedChunks() {
+    const { dataChunks, renderChunks } = this;
+    [...dataChunks.keys()].forEach((key) => {
+      if (!renderChunks.has(key)) {
+        const [x, y, z] = key.split(':');
+        this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
       }
     });
   }
