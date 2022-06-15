@@ -258,12 +258,17 @@ class World extends Group {
 
   updateLoadedChunks() {
     const { dataChunks, renderChunks } = this;
-    [...dataChunks.keys()].forEach((key) => {
+    const center = new Vector3(-0.5, -0.5, -0.5);
+    const chunks = [];
+    for (let key of dataChunks.keys()) {
       if (!renderChunks.has(key)) {
         const [x, y, z] = key.split(':');
-        this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
+        chunks.push(new Vector3(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10)));
       }
-    });
+    }
+    chunks
+      .sort((a, b) => (a.distanceTo(center) - b.distanceTo(center)))
+      .forEach(({ x, y, z }) => this.loadChunk(x, y, z));
   }
 
   updateVolume(point, radius, value, color) {
