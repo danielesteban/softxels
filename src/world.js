@@ -308,7 +308,6 @@ class World extends Group {
       }
     });
     _queueMicrotask(() => {
-      console.log(queue.size)
       queue.forEach((v, key) => {
         if (loading.has(key)) {
           loading.get(key).abort = true;
