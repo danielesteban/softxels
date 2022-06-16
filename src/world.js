@@ -1,9 +1,16 @@
 import { Group, Vector3 } from 'three';
 import Chunk from './chunk.js';
 import Worker from './core/worker.js';
-import { setImmediate } from './core/setimmediate.js';
 import MesherProgram from './workers/mesher.wasm';
 import MesherWorker from 'web-worker:./workers/mesher.js';
+
+const _queueMicrotask = (typeof self.queueMicrotask === 'function') ? (
+  self.queueMicrotask
+) : (callback) => {
+  Promise.resolve()
+    .then(callback)
+    .catch(e => setTimeout(() => { throw e; }));
+};
 
 const _chunk = new Vector3();
 const _origin = new Vector3();
@@ -89,7 +96,7 @@ class World extends Group {
     }
     const request = { abort: false };
     loading.set(key, request);
-    setImmediate(() => {
+    _queueMicrotask(() => {
       if (request.abort) {
         return;
       }
@@ -145,7 +152,7 @@ class World extends Group {
     loading.neighbors.delete(key);
     const request = { abort: false };
     loading.mesh.set(key, request);
-    setImmediate(() => {
+    _queueMicrotask(() => {
       if (request.abort) {
         return;
       }
