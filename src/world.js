@@ -39,6 +39,7 @@ class World extends Group {
     };
     this.saving = new Map();
     this.storage = storage;
+    this.updateQueue = new Map();
     this.workers = {
       mesher: new Worker({
         buffer: chunkSize * chunkSize * chunkSize * 4 * 8,
@@ -51,8 +52,9 @@ class World extends Group {
   }
 
   dispose() {
-    const { renderChunks, workers } = this;
+    const { renderChunks, updateQueue, workers } = this;
     renderChunks.forEach((mesh) => mesh.dispose());
+    updateQueue.clear();
     [workers.mesher, workers.worldgen].forEach((worker) => {
       if (worker) {
         worker.dispose();
@@ -61,17 +63,9 @@ class World extends Group {
   }
 
   reset() {
-    const { anchorChunk, dataChunks, renderChunks, loading, workers } = this;
+    const { anchorChunk, dataChunks, loading, renderChunks, updateQueue, workers } = this;
     anchorChunk.set(Infinity, Infinity, Infinity);
     dataChunks.clear();
-    if (renderChunks.size) {
-      renderChunks.forEach((mesh) => {
-        mesh.dispose();
-        this.remove(mesh);
-      });
-      renderChunks.clear();
-      this.dispatchEvent({ type: 'update' });
-    }
     loading.data.forEach((request) => {
       request.abort = true;
     });
@@ -81,6 +75,15 @@ class World extends Group {
       request.abort = true;
     });
     loading.mesh.clear();
+    if (renderChunks.size) {
+      renderChunks.forEach((mesh) => {
+        mesh.dispose();
+        this.remove(mesh);
+      });
+      renderChunks.clear();
+      this.dispatchEvent({ type: 'update' });
+    }
+    updateQueue.clear();
     [workers.mesher, workers.worldgen].forEach((worker) => {
       if (worker) {
         worker.queue.length = 0;
@@ -96,32 +99,27 @@ class World extends Group {
     }
     const request = { abort: false };
     loading.set(key, request);
-    _queueMicrotask(() => {
-      if (request.abort) {
-        return;
-      }
-      (storage ? storage.get(key) : Promise.resolve(false))
-        .then((stored) => {
-          if (request.abort) {
-            return;
-          }
-          if (stored) {
-            return stored;
-          }
-          if (workers.worldgen) {
-            return workers.worldgen.run({ x, y, z });
-          }
-          return new Uint8Array(chunkSize * chunkSize * chunkSize * 4);
-        })
-        .then((data) => {
-          if (request.abort) {
-            return;
-          }
-          loading.delete(key);
-          dataChunks.set(key, data);
-          this.loadPendingNeighbors(x, y, z);
-        });
-    });
+    (storage ? storage.get(key) : Promise.resolve(false))
+      .then((stored) => {
+        if (request.abort) {
+          return;
+        }
+        if (stored) {
+          return stored;
+        }
+        if (workers.worldgen) {
+          return workers.worldgen.run({ x, y, z });
+        }
+        return new Uint8Array(chunkSize * chunkSize * chunkSize * 4);
+      })
+      .then((data) => {
+        if (request.abort) {
+          return;
+        }
+        loading.delete(key);
+        dataChunks.set(key, data);
+        this.loadPendingNeighbors(x, y, z);
+      });
   }
 
   loadChunk(x, y, z) {
@@ -152,35 +150,30 @@ class World extends Group {
     loading.neighbors.delete(key);
     const request = { abort: false };
     loading.mesh.set(key, request);
-    _queueMicrotask(() => {
+    workers.mesher.run(neighbors).then((geometry) => {
       if (request.abort) {
         return;
       }
-      workers.mesher.run(neighbors).then((geometry) => {
-        if (request.abort) {
-          return;
+      loading.mesh.delete(key);
+      const current = renderChunks.get(key);
+      if (current) {
+        if (geometry) {
+          current.update(geometry);
+        } else {
+          current.dispose();
+          this.remove(current);
         }
-        loading.mesh.delete(key);
-        const current = renderChunks.get(key);
-        if (current) {
-          if (geometry) {
-            current.update(geometry);
-          } else {
-            current.dispose();
-            this.remove(current);
-          }
-        } else if (geometry) {
-          const chunk = new Chunk({
-            chunkMaterial,
-            chunkSize,
-            geometry,
-            position: { x, y, z },
-          });
-          this.add(chunk);
-          renderChunks.set(key, chunk);
-        }
-        this.dispatchEvent({ type: 'update' });
-      });
+      } else if (geometry) {
+        const chunk = new Chunk({
+          chunkMaterial,
+          chunkSize,
+          geometry,
+          position: { x, y, z },
+        });
+        this.add(chunk);
+        renderChunks.set(key, chunk);
+      }
+      this.dispatchEvent({ type: 'update' });
     });
   }
 
@@ -195,19 +188,6 @@ class World extends Group {
         }
       }
     }
-  }
-
-  saveChunk(x, y, z) {
-    const { dataChunks, saving, storage } = this;
-    const key = `${x}:${y}:${z}`;
-    if (!storage || !storage.set || saving.has(key)) {
-      return;
-    }
-    saving.set(key, true);
-    setTimeout(() => {
-      saving.delete(key);
-      storage.set(key, dataChunks.get(key));
-    }, storage.saveInterval || 0);
   }
 
   importChunks(buffer, autoUpdateChunks = true, autoUpdateScale = true) {
@@ -247,6 +227,7 @@ class World extends Group {
     }
     anchorChunk.copy(_chunk);
     const maxDistance = renderRadius * 1.25;
+    let hasRemoved = false;
     renderChunks.forEach((mesh, key) => {
       if (
         anchorChunk.distanceTo(mesh.chunk) > maxDistance
@@ -254,8 +235,12 @@ class World extends Group {
         mesh.dispose();
         this.remove(mesh);
         renderChunks.delete(key);
+        hasRemoved = true;
       }
     });
+    if (hasRemoved) {
+      this.dispatchEvent({ type: 'update' });
+    }
     renderGrid.forEach((offset) => {
       _chunk.addVectors(anchorChunk, offset);
       const key = `${_chunk.x}:${_chunk.y}:${_chunk.z}`;
@@ -281,9 +266,8 @@ class World extends Group {
   }
 
   updateVolume(point, radius, value, color) {
-    const { chunkSize, dataChunks, loading: { mesh: loading } } = this;
+    const { chunkSize, dataChunks, loading: { mesh: loading }, updateQueue: queue } = this;
     this.worldToLocal(_origin.copy(point)).floor();
-    const affected = new Map();
     World.getBrush(radius).forEach((offset) => {
       _voxel.addVectors(_origin, offset);
       _chunk.copy(_voxel).divideScalar(chunkSize).floor();
@@ -298,40 +282,55 @@ class World extends Group {
         if (color) {
           data.set([color.r, color.g, color.b], index + 1);
         }
-        this.saveChunk(_chunk.x, _chunk.y, _chunk.z);
-        affected.set(key, true);
+        this.saveChunk(key);
+        queue.set(key, true);
         if (_voxel.x === 0) {
-          affected.set(`${_chunk.x - 1}:${_chunk.y}:${_chunk.z}`, true);
+          queue.set(`${_chunk.x - 1}:${_chunk.y}:${_chunk.z}`, true);
         }
         if (_voxel.y === 0) {
-          affected.set(`${_chunk.x}:${_chunk.y - 1}:${_chunk.z}`, true);
+          queue.set(`${_chunk.x}:${_chunk.y - 1}:${_chunk.z}`, true);
         }
         if (_voxel.z === 0) {
-          affected.set(`${_chunk.x}:${_chunk.y}:${_chunk.z - 1}`, true);
+          queue.set(`${_chunk.x}:${_chunk.y}:${_chunk.z - 1}`, true);
         }
         if (_voxel.x === 0 && _voxel.y === 0 && _voxel.z === 0) {
-          affected.set(`${_chunk.x - 1}:${_chunk.y - 1}:${_chunk.z - 1}`, true);
+          queue.set(`${_chunk.x - 1}:${_chunk.y - 1}:${_chunk.z - 1}`, true);
         }
         if (_voxel.x === 0 && _voxel.y === 0) {
-          affected.set(`${_chunk.x - 1}:${_chunk.y - 1}:${_chunk.z}`, true);
+          queue.set(`${_chunk.x - 1}:${_chunk.y - 1}:${_chunk.z}`, true);
         }
         if (_voxel.y === 0 && _voxel.z === 0) {
-          affected.set(`${_chunk.x}:${_chunk.y - 1}:${_chunk.z - 1}`, true);
+          queue.set(`${_chunk.x}:${_chunk.y - 1}:${_chunk.z - 1}`, true);
         }
         if (_voxel.x === 0 && _voxel.z === 0) {
-          affected.set(`${_chunk.x - 1}:${_chunk.y}:${_chunk.z - 1}`, true);
+          queue.set(`${_chunk.x - 1}:${_chunk.y}:${_chunk.z - 1}`, true);
         }
       }
     });
-    affected.forEach((v, key) => {
-      if (loading.has(key)) {
-        loading.get(key).abort = true;
-        loading.delete(key);
-      }
-      const [x, y, z] = key.split(':');
-      this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
+    _queueMicrotask(() => {
+      console.log(queue.size)
+      queue.forEach((v, key) => {
+        if (loading.has(key)) {
+          loading.get(key).abort = true;
+          loading.delete(key);
+        }
+        const [x, y, z] = key.split(':');
+        this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
+      });
+      queue.clear();
     });
-    return affected.size;
+  }
+
+  saveChunk(key) {
+    const { dataChunks, saving, storage } = this;
+    if (!storage || !storage.set || saving.has(key)) {
+      return;
+    }
+    saving.set(key, true);
+    setTimeout(() => {
+      saving.delete(key);
+      storage.set(key, dataChunks.get(key));
+    }, storage.saveInterval || 0);
   }
 
   static getBrush(radius) {
