@@ -6,7 +6,6 @@ import {
   Mesh,
   MeshBasicMaterial,
   Sphere,
-  Vector3,
 } from 'three';
 
 class Chunk extends Mesh {
@@ -27,7 +26,6 @@ class Chunk extends Mesh {
     this.geometry.boundingBox = new Box3();
     this.geometry.boundingSphere = new Sphere();
     this.update(geometry);
-    this.chunk = (new Vector3()).copy(position);
     this.position.copy(position).multiplyScalar(chunkSize);
     this.updateMatrixWorld();
     this.castShadow = true;

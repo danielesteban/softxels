@@ -205,26 +205,32 @@ class World extends Group {
   }
 
   updateChunks(anchor) {
-    const { anchorChunk, chunkSize, loading: { mesh: loading }, renderChunks, renderGrid, renderRadius } = this;
+    const { anchorChunk, chunkSize, dataChunks, loading: { mesh: loading }, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(_chunk.copy(anchor)).divideScalar(chunkSize).floor();
     if (anchorChunk.equals(_chunk)) {
       return;
     }
     anchorChunk.copy(_chunk);
-    const maxDistance = renderRadius * 1.25;
     let hasRemoved = false;
-    renderChunks.forEach((mesh, key) => {
+    const maxDistance = renderRadius + 2;
+    dataChunks.forEach((v, key) => {
+      const [x, y, z] = key.split(':');
+      _chunk.set(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
       if (
-        anchorChunk.distanceTo(mesh.chunk) > maxDistance
+        anchorChunk.distanceTo(_chunk) > maxDistance
       ) {
+        dataChunks.delete(key);
         if (loading.has(key)) {
           loading.get(key).abort = true;
           loading.delete(key);
         }
-        mesh.dispose();
-        this.remove(mesh);
-        renderChunks.delete(key);
-        hasRemoved = true;
+        const mesh = renderChunks.get(key);
+        if (mesh) {
+          renderChunks.delete(key);
+          mesh.dispose();
+          this.remove(mesh);
+          hasRemoved = true;
+        }
       }
     });
     if (hasRemoved) {
@@ -322,7 +328,10 @@ class World extends Group {
     saving.set(key, true);
     setTimeout(() => {
       saving.delete(key);
-      storage.set(key, dataChunks.get(key));
+      const data = dataChunks.get(key);
+      if (data) {
+        storage.set(key, data);
+      }
     }, storage.saveInterval || 0);
   }
 

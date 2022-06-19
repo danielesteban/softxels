@@ -90,7 +90,7 @@ new WorldGen({
 ```js
 // This will load all the chunks around the anchor in the selected renderRadius
 // passed to the constructor.
-// It will also unload all the render chunks further away (renderRadius * 1.25).
+// It will also unload all the chunks further away (renderRadius + 2).
 // You should call this everytime you move the anchor.
 // It does remember the last chunk the anchor was in, so... It will only
 // update when the anchor crosses a chunk boundary.
