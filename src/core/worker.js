@@ -13,6 +13,7 @@ class Worker {
         if (buffer) {
           worker.buffer = new Uint8Array(buffer);
         }
+        worker.isBusy = true;
         worker.run = ({ operation, resolve }) => {
           worker.isBusy = true;
           worker.resolve = resolve;
@@ -29,6 +30,12 @@ class Worker {
         const onLoad = () => {
           worker.removeEventListener('message', onLoad);
           worker.addEventListener('message', onData);
+          const queued = this.queue.shift();
+          if (queued) {
+            worker.run(queued);
+          } else {
+            worker.isBusy = false;
+          }
         };
         const onData = ({ data }) => {
           if (buffer) {
@@ -49,11 +56,6 @@ class Worker {
         worker.postMessage({ options, program });
         return worker;
       });
-      if (this.queue.length) {
-        this.queue.splice(0, concurrency).forEach(({ operation, resolve }) => (
-          this.run(operation).then(resolve)
-        ));
-      }
     });
   }
 
