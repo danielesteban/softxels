@@ -34,7 +34,6 @@ class World extends Group {
     this.renderGrid = World.getRenderGrid(renderRadius);
     this.loading = {
       data: new Map(),
-      neighbors: new Map(),
       mesh: new Map(),
     };
     this.saving = new Map();
@@ -52,7 +51,13 @@ class World extends Group {
   }
 
   dispose() {
-    const { renderChunks, updateQueue, workers } = this;
+    const { loading, renderChunks, updateQueue, workers } = this;
+    [loading.data, loading.mesh].forEach((requests) => {
+      requests.forEach((request) => {
+        request.abort = true;
+      });
+      requests.clear();
+    });
     renderChunks.forEach((mesh) => mesh.dispose());
     updateQueue.clear();
     [workers.mesher, workers.worldgen].forEach((worker) => {
@@ -66,15 +71,12 @@ class World extends Group {
     const { anchorChunk, dataChunks, loading, renderChunks, updateQueue, workers } = this;
     anchorChunk.set(Infinity, Infinity, Infinity);
     dataChunks.clear();
-    loading.data.forEach((request) => {
-      request.abort = true;
+    [loading.data, loading.mesh].forEach((requests) => {
+      requests.forEach((request) => {
+        request.abort = true;
+      });
+      requests.clear();
     });
-    loading.data.clear();
-    loading.neighbors.clear();
-    loading.mesh.forEach((request) => {
-      request.abort = true;
-    });
-    loading.mesh.clear();
     if (renderChunks.size) {
       renderChunks.forEach((mesh) => {
         mesh.dispose();
@@ -91,103 +93,86 @@ class World extends Group {
     });
   }
 
-  generateChunk(x, y, z) {
+  getChunk(x, y, z) {
     const { chunkSize, dataChunks, loading: { data: loading }, storage, workers } = this;
+    const key = `${x}:${y}:${z}`;
+    return new Promise((resolve) => {
+      if (dataChunks.has(key)) {
+        resolve(dataChunks.get(key));
+        return;
+      }
+      if (loading.has(key)) {
+        loading.get(key).promises.push(resolve);
+        return;
+      }
+      const request = { abort: false, promises: [resolve] };
+      loading.set(key, request);
+      (storage ? storage.get(key) : Promise.resolve(false))
+        .then((stored) => {
+          if (request.abort) {
+            return;
+          }
+          if (stored) {
+            return stored;
+          }
+          if (workers.worldgen) {
+            return workers.worldgen.run({ x, y, z });
+          }
+          return new Uint8Array(chunkSize * chunkSize * chunkSize * 4);
+        })
+        .then((data) => {
+          if (request.abort) {
+            return;
+          }
+          loading.delete(key);
+          dataChunks.set(key, data);
+          request.promises.forEach((resolve) => resolve(data));
+        });
+      });
+  }
+
+  loadChunk(x, y, z) {
+    const { chunkMaterial, chunkSize, renderChunks, loading: { mesh: loading }, workers } = this;
     const key = `${x}:${y}:${z}`;
     if (loading.has(key)) {
       return;
     }
     const request = { abort: false };
     loading.set(key, request);
-    (storage ? storage.get(key) : Promise.resolve(false))
-      .then((stored) => {
+    return Promise.all(
+      World.chunkGrid.map((n) => this.getChunk(x + n.x, y + n.y, z + n.z))
+    )
+      .then((chunks) => {
         if (request.abort) {
           return;
         }
-        if (stored) {
-          return stored;
-        }
-        if (workers.worldgen) {
-          return workers.worldgen.run({ x, y, z });
-        }
-        return new Uint8Array(chunkSize * chunkSize * chunkSize * 4);
+        return workers.mesher.run(chunks);
       })
-      .then((data) => {
+      .then((geometry) => {
         if (request.abort) {
           return;
         }
         loading.delete(key);
-        dataChunks.set(key, data);
-        this.loadPendingNeighbors(x, y, z);
-      });
-  }
-
-  loadChunk(x, y, z) {
-    const { chunkMaterial, chunkSize, dataChunks, renderChunks, loading, workers } = this;
-    const key = `${x}:${y}:${z}`;
-    if (loading.mesh.has(key)) {
-      return;
-    }
-    let needsData = false;
-    const neighbors = [];
-    for (let nz = z; nz <= z + 1; nz++) {
-      for (let ny = y; ny <= y + 1; ny++) {
-        for (let nx = x; nx <= x + 1; nx++) {
-          const nkey = `${nx}:${ny}:${nz}`;
-          if (!dataChunks.has(nkey)) {
-            this.generateChunk(nx, ny, nz);
-            needsData = true;
+        const current = renderChunks.get(key);
+        if (current) {
+          if (geometry) {
+            current.update(geometry);
           } else {
-            neighbors.push(dataChunks.get(nkey));
+            current.dispose();
+            this.remove(current);
           }
+        } else if (geometry) {
+          const chunk = new Chunk({
+            chunkMaterial,
+            chunkSize,
+            geometry,
+            position: { x, y, z },
+          });
+          this.add(chunk);
+          renderChunks.set(key, chunk);
         }
-      }
-    }
-    if (needsData) {
-      loading.neighbors.set(key, true);
-      return;
-    }
-    loading.neighbors.delete(key);
-    const request = { abort: false };
-    loading.mesh.set(key, request);
-    workers.mesher.run(neighbors).then((geometry) => {
-      if (request.abort) {
-        return;
-      }
-      loading.mesh.delete(key);
-      const current = renderChunks.get(key);
-      if (current) {
-        if (geometry) {
-          current.update(geometry);
-        } else {
-          current.dispose();
-          this.remove(current);
-        }
-      } else if (geometry) {
-        const chunk = new Chunk({
-          chunkMaterial,
-          chunkSize,
-          geometry,
-          position: { x, y, z },
-        });
-        this.add(chunk);
-        renderChunks.set(key, chunk);
-      }
-      this.dispatchEvent({ type: 'update' });
-    });
-  }
-
-  loadPendingNeighbors(x, y, z) {
-    const { loading: { neighbors } } = this;
-    for (let nz = z - 1; nz <= z + 1; nz++) {
-      for (let ny = y - 1; ny <= y + 1; ny++) {
-        for (let nx = x - 1; nx <= x + 1; nx++) {
-          if (neighbors.has(`${nx}:${ny}:${nz}`)) {
-            this.loadChunk(nx, ny, nz);
-          }
-        }
-      }
-    }
+        this.dispatchEvent({ type: 'update' });
+      });
   }
 
   importChunks(buffer, autoUpdateChunks = true, autoUpdateScale = true) {
@@ -220,7 +205,7 @@ class World extends Group {
   }
 
   updateChunks(anchor) {
-    const { anchorChunk, chunkSize, renderChunks, renderGrid, renderRadius } = this;
+    const { anchorChunk, chunkSize, loading: { mesh: loading }, renderChunks, renderGrid, renderRadius } = this;
     this.worldToLocal(_chunk.copy(anchor)).divideScalar(chunkSize).floor();
     if (anchorChunk.equals(_chunk)) {
       return;
@@ -232,6 +217,10 @@ class World extends Group {
       if (
         anchorChunk.distanceTo(mesh.chunk) > maxDistance
       ) {
+        if (loading.has(key)) {
+          loading.get(key).abort = true;
+          loading.delete(key);
+        }
         mesh.dispose();
         this.remove(mesh);
         renderChunks.delete(key);
@@ -267,6 +256,7 @@ class World extends Group {
 
   updateVolume(point, radius, value, color) {
     const { chunkSize, dataChunks, loading: { mesh: loading }, updateQueue: queue } = this;
+    const hasQueuedUpdate = !!queue.size;
     this.worldToLocal(_origin.copy(point)).floor();
     World.getBrush(radius).forEach((offset) => {
       _voxel.addVectors(_origin, offset);
@@ -307,17 +297,21 @@ class World extends Group {
         }
       }
     });
-    _queueMicrotask(() => {
-      queue.forEach((v, key) => {
-        if (loading.has(key)) {
-          loading.get(key).abort = true;
-          loading.delete(key);
-        }
-        const [x, y, z] = key.split(':');
-        this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
+    if (!hasQueuedUpdate && queue.size) {
+      // updateVolume can be called multiple times per frame
+      // deferring this prevents duplicated chunk remeshing
+      _queueMicrotask(() => {
+        queue.forEach((v, key) => {
+          if (loading.has(key)) {
+            loading.get(key).abort = true;
+            loading.delete(key);
+          }
+          const [x, y, z] = key.split(':');
+          this.loadChunk(parseInt(x, 10), parseInt(y, 10), parseInt(z, 10));
+        });
+        queue.clear();
       });
-      queue.clear();
-    });
+    }
   }
 
   saveChunk(key) {
@@ -373,5 +367,17 @@ class World extends Group {
 }
 
 World.brushes = new Map();
+
+World.chunkGrid = (() => {
+  const grid = [];
+  for (let z = 0; z < 2; z++) {
+    for (let y = 0; y < 2; y++) {
+      for (let x = 0; x < 2; x++) {
+        grid.push(new Vector3(x, y, z));
+      }
+    }
+  }
+  return grid;
+})();
 
 export default World;
