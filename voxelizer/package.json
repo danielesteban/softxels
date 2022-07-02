@@ -2,13 +2,13 @@
   "name": "softxels-voxelizer",
   "author": "Daniel Esteban Nombela",
   "license": "MIT",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "bin": "cli.mjs",
   "module": "module.mjs",
   "homepage": "https://github.com/danielesteban/softxels",
   "dependencies": {
     "fetch-blob": "^3.1.5",
-    "three": "^0.141.0",
+    "three": "^0.142.0",
     "yargs": "^17.5.1"
   }
 }
